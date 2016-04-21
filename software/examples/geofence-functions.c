@@ -2,6 +2,7 @@
  * Examples of how to create a simple Geofence.
  * Copyright (C) 2016,  Alex Muir 
  * https://hackaday.io/project/10725-openfence-digital-livestock-fencing
+ * https://hackaday.io/project/10725-openfence-digital-livestock-fencing/log/35952-geofence-functionality
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,6 +70,7 @@ double distanceHaver(struct position v, struct position w){   //Haversine
 
 //Step 2: Test if the point is within the polygon of points
 bool pointInPolygon() {
+  //From http://alienryderflex.com/polygon/
   //oddNodes = 1 means within the polygon, oddNodes = 0 outside the polygon.
   int   i, j=polyCorners-1 ;
   bool  oddNodes=0;
