@@ -1,0 +1,6 @@
+Screw holes in top 
+Add O rings to the pins
+Mounts for the straps
+Update to match components when they arrive
+Alter size based on PCB design
+Antenna mount - waterproof
