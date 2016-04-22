@@ -30,3 +30,5 @@
 
 # Debug files
 *.dSYM/
+
+software/examples/geofence-functions
