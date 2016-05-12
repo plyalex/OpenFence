@@ -32,3 +32,5 @@
 *.dSYM/
 
 software/examples/geofence-functions
+
+software/examples/testing
