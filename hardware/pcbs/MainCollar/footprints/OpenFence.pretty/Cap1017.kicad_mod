@@ -1,8 +1,8 @@
-(module Cap1017 (layer F.Cu) (tedit 572F1596)
-  (fp_text reference C** (at -9 6) (layer F.SilkS)
+(module Cap1017 (layer F.Cu) (tedit 5736B77C)
+  (fp_text reference C15 (at -9 6) (layer F.SilkS)
     (effects (font (size 1 1) (thickness 0.15)))
   )
-  (fp_text value Cap1017 (at -9 -6) (layer F.Fab) hide
+  (fp_text value 2200uF (at -9 -6) (layer F.Fab) hide
     (effects (font (size 1 1) (thickness 0.15)))
   )
   (fp_line (start -1 -5) (end 1 -5) (layer F.SilkS) (width 0.15))
@@ -13,6 +13,6 @@
   (fp_line (start -2 -5) (end -2 5) (layer F.SilkS) (width 0.15))
   (fp_line (start -2 5) (end -17 5) (layer F.SilkS) (width 0.15))
   (fp_line (start -2 -5) (end -17 -5) (layer F.SilkS) (width 0.15))
-  (pad 1 thru_hole rect (at 0 -2.5) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask F.SilkS))
-  (pad 2 thru_hole circle (at 0 2.5) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask F.SilkS))
+  (pad 1 thru_hole rect (at 0 -2.54) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask F.SilkS))
+  (pad 2 thru_hole circle (at 0 2.54) (size 1.524 1.524) (drill 0.762) (layers *.Cu *.Mask F.SilkS))
 )
