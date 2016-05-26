@@ -20,7 +20,7 @@ void PA6C::getGPRMC(){
 	return;
 }
 
-double PA6C::getLatitude(){
+float PA6C::getLatitude(){
 	char *parseptr;     // a character pointer for parsing
     parseptr = buffer+20;
 	uint32_t raw = parsedecimal(parseptr);
@@ -29,7 +29,7 @@ double PA6C::getLatitude(){
   		parseptr = strchr(parseptr, '.')+1;
   		raw += parsedecimal(parseptr);
 	}
-  	double new_val = (raw/1000000);                               //Grab the degrees from the raw number
+  	float new_val = (raw/1000000);                               //Grab the degrees from the raw number
   	new_val = new_val + ((((float)raw/1000000)-new_val)/0.6);     //Find the minutes from the raw number
 	parseptr = strchr(parseptr, ',') + 1;
 	// read latitude N/S data
@@ -39,7 +39,7 @@ double PA6C::getLatitude(){
   return new_val;
 }
 
-double PA6C::getLongitude(){
+float PA6C::getLongitude(){
   char *parseptr;     // a character pointer for parsing
   parseptr = buffer+32;
   uint32_t raw = parsedecimal(parseptr);
@@ -48,7 +48,7 @@ double PA6C::getLongitude(){
       parseptr = strchr(parseptr, '.')+1;
       raw += parsedecimal(parseptr);
   }
-  double new_val = (raw/1000000);                               //Grab the degrees from the raw number
+  float new_val = (raw/1000000);                               //Grab the degrees from the raw number
   new_val = new_val + ((((float)raw/1000000)-new_val)/0.6);     //Find the minutes from the raw number
   parseptr = strchr(parseptr, ',') + 1;
   // read latitude N/S data

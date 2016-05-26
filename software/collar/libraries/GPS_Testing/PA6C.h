@@ -13,23 +13,24 @@ class PA6C
 	public:
 		PA6C(void);
 		void getGPRMC(void);
-		double getLatitude(void);
-		double getLongitude(void);
+		float getLatitude(void);
+		float getLongitude(void);
 		int getTime(void);
 		int getDate(void);
 
 
 	private:
-
 		uint32_t parsedecimal(char *str);
 		void readLine(void);
-		int parseData();
 
 		// global variables
 		static char buffer[BUFFSIZ];        // string buffer for the sentence
 		static char buffidx;                // an indexer into the buffer
 
 };
+
+//Add ability to change refresh rate etc.
+
 
 
 #endif
