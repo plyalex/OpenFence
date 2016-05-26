@@ -53,8 +53,8 @@ double sqr(double x){
 
 //Step 1: Different Distance Calculation Functions
 double distanceEquir(struct position v, struct position w) {   //Equirectangular Approximation
-  double p1 = (v.lonrad - w.lonrad)* cos( 0.5*(v.latrad+w.latrad) ) ;
-  double p2 = (v.latrad - w.latrad);
+  double p1 = degrees2radians(v.lon - w.lon)* cos( 0.5*(v.latrad+w.latrad) ) ;
+  double p2 = degrees2radians(v.lat - w.lat);
   return 6371000 * sqrt( p1*p1 + p2*p2);
 }  
 double distanceSpher(struct position v, struct position w) {   //Spherical Law of Cosines
@@ -70,17 +70,14 @@ double distanceHaver(struct position v, struct position w){   //Haversine
 
 //Step 2: Test if the point is within the polygon of points
 bool pointInPolygon() {
-  //Based on http://alienryderflex.com/polygon/
+  //From http://alienryderflex.com/polygon/
   //oddNodes = 1 means within the polygon, oddNodes = 0 outside the polygon.
   int   i, j=polyCorners-1 ;
   bool  oddNodes=0;
 
   for(i=0; i<polyCorners; i++) {
-    if(((points[i].latrad< me.latrad && points[j].latrad>=me.latrad) 
-      || (points[j].latrad< me.latrad && points[i].latrad>=me.latrad))  
-      &&  (points[i].lonrad<=me.lonrad || points[j].lonrad<=me.lonrad)) {
-      oddNodes^=(points[i].lonrad+(me.latrad-points[i].latrad) / 
-        (points[j].latrad-points[i].latrad)*(points[j].lonrad-points[i].lonrad)<me.lonrad); 
+    if(((points[i].lat< me.lat && points[j].lat>=me.lat)   ||   (points[j].lat< me.lat && points[i].lat>=me.lat))  &&  (points[i].lon<=me.lon || points[j].lon<=me.lon)) {
+      oddNodes^=(points[i].lon+(me.lat-points[i].lat)/(points[j].lat-points[i].lat)*(points[j].lon-points[i].lon)<me.lon); 
     }
     j=i; 
   }
@@ -140,14 +137,14 @@ double dist2segment(struct position p, struct position v, struct position w){
 int main()
 {
   //Some Test Points
-	points[0].lat = -37.911318; 
-	points[0].lon = 145.138143;
-	points[1].lat = -37.911462;
-	points[1].lon = 145.139120;
-	points[2].lat = -37.912300;
-	points[2].lon = 145.138902;
-	points[3].lat = -37.912135;
-	points[3].lon = 145.137907;
+	points[0].lat = -37.91131; 
+	points[0].lon = 145.13814;
+	points[1].lat = -37.91146;
+	points[1].lon = 145.13912;
+	points[2].lat = -37.91230;
+	points[2].lon = 145.13890;
+	points[3].lat = -37.91213;
+	points[3].lon = 145.13790;
 
 	
   //Convert degrees to radians and store in the struct
@@ -156,13 +153,11 @@ int main()
       points[i].lonrad = degrees2radians(points[i].lon);
   }
 
-  //Three possible test positons.
-	me.lat = -37.911779; //Inside
-	me.lon = 145.138567;
-	//me.lat = -37.911643; //Just Outside 
-  //me.lon = 145.137766;
-  //me.lat = -37.913647; //Well outside
-  //me.lon = 145.137045;
+  //Two possible test positons, first within the bondary, second outside the boundary.
+	//me.lat = -37.911779;
+	//me.lon = 145.138567;
+	me.lat = -37.911643;
+  me.lon = 145.137766;
   me.latrad = degrees2radians(me.lat);
   me.lonrad = degrees2radians(me.lon);
 
@@ -176,9 +171,9 @@ int main()
 
   //Step 3 and 4: Which sides are we outside and by how far?
   printf("Side \t Step 3 \t Step 4 \tSide length \n");
-  printf("3<->0 \t %G \t %G \t %G\n", distBehind(me,points[polyCorners-1],points[0])*100000, dist2segment(me,points[polyCorners-1],points[0]), distanceEquir(points[polyCorners-1],points[0]));
-  for(int i=1; i<polyCorners; i++){ 
-    printf("%i<->%i \t %G \t %G \t %G\n",i-1,i, distBehind(me,points[i-1],points[i])*100000, dist2segment(me,points[i-1],points[i]), distanceEquir(points[i-1],points[i]));
+  for(int i=0; i<polyCorners; i++){
+    if(i==0)  printf("3<->0 \t %G \t %G \t %G\n", distBehind(me,points[polyCorners-1],points[0])*100000, dist2segment(me,points[polyCorners-1],points[0]), distanceEquir(points[polyCorners-1],points[0]));
+    else printf("%i<->%i \t %G \t %G \t %G\n",i-1,i, distBehind(me,points[i-1],points[i])*100000, dist2segment(me,points[i-1],points[i]), distanceEquir(points[i-1],points[i]));
   }
 
   printf("\n");

@@ -14,7 +14,7 @@
 
   (page A4)
   (layers
-    (0 F.Cu signal hide)
+    (0 F.Cu signal)
     (31 B.Cu signal)
     (32 B.Adhes user hide)
     (33 F.Adhes user hide)
@@ -37,7 +37,7 @@
   )
 
   (setup
-    (last_trace_width 1.016)
+    (last_trace_width 0.254)
     (user_trace_width 0.2032)
     (user_trace_width 0.254)
     (user_trace_width 0.381)
@@ -1260,12 +1260,12 @@
     )
   )
 
-  (module Mounting_Holes:MountingHole_3.2mm_M3 locked (layer F.Cu) (tedit 56D1B4CB) (tstamp 572F25B9)
+  (module Mounting_Holes:MountingHole_3.2mm_M3 locked (layer F.Cu) (tedit 573C4100) (tstamp 572F25B9)
     (at 39.5 39.5)
     (descr "Mounting Hole 3.2mm, no annular, M3")
     (tags "mounting hole 3.2mm no annular m3")
     (path /572D744D)
-    (fp_text reference M1 (at 0 -4.2) (layer F.SilkS)
+    (fp_text reference M1 (at 0 -4.2) (layer F.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_text value Mounting_Hole (at 0 4.2) (layer F.Fab)
@@ -1276,12 +1276,12 @@
     (pad 1 np_thru_hole circle (at 0 0) (size 3.2 3.2) (drill 3.2) (layers *.Cu *.Mask F.SilkS))
   )
 
-  (module Mounting_Holes:MountingHole_3.2mm_M3 locked (layer F.Cu) (tedit 56D1B4CB) (tstamp 572F25BE)
+  (module Mounting_Holes:MountingHole_3.2mm_M3 locked (layer F.Cu) (tedit 573C4104) (tstamp 572F25BE)
     (at 89.5 39.5)
     (descr "Mounting Hole 3.2mm, no annular, M3")
     (tags "mounting hole 3.2mm no annular m3")
     (path /572D7553)
-    (fp_text reference M2 (at 0 -4.2) (layer F.SilkS)
+    (fp_text reference M2 (at 0 -4.2) (layer F.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_text value Mounting_Hole (at 0 4.2) (layer F.Fab)
@@ -1292,12 +1292,12 @@
     (pad 1 np_thru_hole circle (at 0 0) (size 3.2 3.2) (drill 3.2) (layers *.Cu *.Mask F.SilkS))
   )
 
-  (module Mounting_Holes:MountingHole_3.2mm_M3 locked (layer F.Cu) (tedit 56D1B4CB) (tstamp 572F25C3)
+  (module Mounting_Holes:MountingHole_3.2mm_M3 locked (layer F.Cu) (tedit 573C4108) (tstamp 572F25C3)
     (at 89.5 129.5)
     (descr "Mounting Hole 3.2mm, no annular, M3")
     (tags "mounting hole 3.2mm no annular m3")
     (path /572D7653)
-    (fp_text reference M3 (at 0 -4.2) (layer F.SilkS)
+    (fp_text reference M3 (at 0 -4.2) (layer F.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_text value Mounting_Hole (at 0 4.2) (layer F.Fab)
@@ -1308,12 +1308,12 @@
     (pad 1 np_thru_hole circle (at 0 0) (size 3.2 3.2) (drill 3.2) (layers *.Cu *.Mask F.SilkS))
   )
 
-  (module Mounting_Holes:MountingHole_3.2mm_M3 locked (layer F.Cu) (tedit 56D1B4CB) (tstamp 572F25C8)
+  (module Mounting_Holes:MountingHole_3.2mm_M3 locked (layer F.Cu) (tedit 573C410C) (tstamp 572F25C8)
     (at 39.5 129.5)
     (descr "Mounting Hole 3.2mm, no annular, M3")
     (tags "mounting hole 3.2mm no annular m3")
     (path /572D774C)
-    (fp_text reference M4 (at 0 -4.2) (layer F.SilkS)
+    (fp_text reference M4 (at 0 -4.2) (layer F.SilkS) hide
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_text value Mounting_Hole (at 0 4.2) (layer F.Fab)
@@ -2803,12 +2803,12 @@
     )
   )
 
-  (module Pin_Headers:Pin_Header_Straight_1x02 (layer F.Cu) (tedit 54EA090C) (tstamp 573880A9)
+  (module Pin_Headers:Pin_Header_Straight_1x02 (layer F.Cu) (tedit 573C4118) (tstamp 573880A9)
     (at 50.165 130.81 270)
     (descr "Through hole pin header")
     (tags "pin header")
     (path /5723936E)
-    (fp_text reference P7 (at 0 -5.1 270) (layer F.SilkS)
+    (fp_text reference P7 (at 0 -2.667 270) (layer F.SilkS)
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_text value SPK_L (at 0 -3.1 270) (layer F.Fab)
@@ -2836,12 +2836,12 @@
     )
   )
 
-  (module Pin_Headers:Pin_Header_Straight_1x02 (layer F.Cu) (tedit 54EA090C) (tstamp 573880B9)
+  (module Pin_Headers:Pin_Header_Straight_1x02 (layer F.Cu) (tedit 573C4115) (tstamp 573880B9)
     (at 80.01 130.81 270)
     (descr "Through hole pin header")
     (tags "pin header")
     (path /572393E6)
-    (fp_text reference P8 (at 0 -5.1 270) (layer F.SilkS)
+    (fp_text reference P8 (at 0 -2.54 270) (layer F.SilkS)
       (effects (font (size 1 1) (thickness 0.15)))
     )
     (fp_text value SPK_R (at 0 -3.1 270) (layer F.Fab)
