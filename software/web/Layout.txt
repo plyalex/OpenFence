@@ -1,0 +1,15 @@
+MapApp
+-- app // Backend 
+---- model.js 
+---- routes.js 
+
+-- public // Frontend
+---- index.html 
+---- js
+------ app.js 
+------ addCtrl.js 
+------ gservice.js 
+---- style.css
+
+-- server.js // Express Server
+-- package.json

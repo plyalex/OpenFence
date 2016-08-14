@@ -1,0 +1,99 @@
+<!doctype html>
+<!-- Declares meanMapApp as the starting Angular module -->
+<html class="no-js" ng-app="OpenFence">
+<head>
+    <meta charset="utf-8">
+    <title>OpenFence</title>
+    <meta name="description" content="OpenFence - Digital Livestock Fencing Solution">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- CSS -->
+    <link rel="stylesheet" href="../bower_components/bootstrap/dist/css/bootstrap.css"/>
+    <link rel="stylesheet" href="style.css"/>
+    <!-- Holder JS -->
+    <script src="../bower_components/holderjs/holder.js"></script>
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEhoLJPuSlTDZo9ea1sXlrtO_Qh3mkD3Q"></script>
+    <!-- Modernizr -->
+    <script src="../bower_components/modernizr/bin/modernizr"></script>
+    <!-- JS Source -->
+    <script src="../bower_components/jquery/src/jquery.js"></script>
+    <script src="../bower_components/angular/angular.js"></script>
+    <script src="../bower_components/angular-route/angular-route.js"></script>
+    <script src="../bower_components/angularjs-geolocation/dist/angularjs-geolocation.min.js"></script>
+    <!-- Angular Scripts -->
+    <script src="js/app.js"></script>
+    <script src="js/addCtrl.js"></script>
+    <script src="js/queryCtrl.js"></script>  
+    <script src="js/fenceCtrl.js"></script>  
+    <script src="js/trackingCtrl.js"></script>  
+    <script src="js/gservice.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    
+</head>
+<body>
+<div class="container">
+    <div class="site-side">
+
+	<div class="openfence-logos">
+		<a href="/">
+			<!--<img src="holder.js/400x233" class="img-responsive">
+-->
+			<h1>OpenFence</h1>
+			<p>Digital Fencing for Livestock</p>
+		</a>
+	</div>
+
+	<nav class="side-nav">
+		<ul class="list-unstyled nav-text">
+            <li><a href="/#/overview" >
+				<img src="images/home.png" class="menu-icons">
+				Overview
+			</a></li>
+			<li class="divider">Fence Management</li>
+			<li><a href="/#/map">
+				<img src="images/map.png" class="menu-icons">
+				Positioning
+			</a></li>
+			<li><a href="/#/collars">
+				<img src="images/collar.png" class="menu-icons">
+				Collar Settings
+			</a></li>
+
+			<li class="divider">Livestock Tracking</li>
+			<li><a href="/#/tracking">
+                <img src="images/track.png" class="menu-icons">
+                Map View
+            </a></li>
+            <li><a href="/#/statistics">
+                <img src="images/statistics.png" class="menu-icons">
+                Statistics
+            </a></li>
+            
+            <li class="divider">Website</li>
+			<li><a href="/#/settings">
+                <img src="images/settings.png" class="menu-icons">
+                Settings
+            </a></li>
+            <li><a href="/#/about">
+                <img src="images/logout.png" class="menu-icons">
+                Log Out
+            </a></li>
+		</ul>
+	</nav>
+</div>
+    
+    <!-- Map and Side Panel -->
+    <div class="main-content">
+        <!-- Google Map -->
+        <div class="left-pane" >
+           <div id="map"></div>
+        </div>
+        
+        <div ng-view class="right-pane">
+            
+        </div>
+    </div>
+    
+</div>
+</body>
+</html>

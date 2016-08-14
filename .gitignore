@@ -35,4 +35,12 @@ software/examples/geofence-functions
 
 software/examples/testing
 
+software/collar/OpenFenceBoards
+
+software/web/bower_components
+
+software/web/data
+
+software/web/node_modules
+
 hardware/pcbs/MainCollar/MainCollarREV1.zip
