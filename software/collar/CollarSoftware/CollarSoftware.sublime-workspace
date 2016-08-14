@@ -1,0 +1,208 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"Seria",
+				"SerialUSB"
+			],
+			[
+				"p",
+				"p"
+			],
+			[
+				"fence",
+				"fenceCorners"
+			]
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/Users/alexjmuir/GitHub/OpenFence/software/collar/OpenFenceBoards/openfence_1.0.0/variants/openfence_collar/variant.h",
+		"/Users/alexjmuir/GitHub/OpenFence/software/collar/OpenFenceBoards/openfence_1.0.0/variants/openfence_collar/variant.cpp",
+		"/Users/alexjmuir/GitHub/OpenFence/software/collar/OpenFenceBoards/openfence_1.0.0/boards.txt",
+		"/Users/alexjmuir/GitHub/OpenFence/software/collar/OpenFenceBoards/package_openfence_index.json",
+		"/Users/alexjmuir/GitHub/OpenFence/software/collar/OpenFenceBoards/openfence_1.0.0/cores/arduino/WInterrupts.c",
+		"/Users/alexjmuir/Library/Arduino15/package_index.json",
+		"/Users/alexjmuir/GitHub/OpenFence/software/collar/OpenFenceBoards/openfence_1.0.0/variants/openfence_collar/pins_arduino.h",
+		"/Volumes/Data/Downloads/Task 1 Template- Introduction to Piccolo.c",
+		"/Applications/Kicad/kicad.app/Contents/SharedSupport/plugins/bom_cvs.xsl",
+		"/Volumes/Data/Downloads/pendulum/nios/synthesis/PWM.v",
+		"/Volumes/Data/Downloads/pendulum/nios/synthesis/pendulum.v",
+		"/Users/alexjmuir/GitHub/OpenFence/software/examples/geofence-functions.c",
+		"/Users/alexjmuir/GitHub/OpenFence/software/examples/testing",
+		"/Users/alexjmuir/GitHub/OpenFence/software/examples/geofence-functions",
+		"/Users/alexjmuir/GitHub/OpenFence/LICENSE"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"arduino_zero_native",
+			"p.",
+			"p",
+			"points",
+			"distanceEquir",
+			"double",
+			"lonrad",
+			"latrad",
+			"distanceEquir",
+			"lon",
+			"lat",
+			"double",
+			"me",
+			"double"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"openfence_collar_native",
+			"d.",
+			"d"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "CollarSoftware.sublime-project",
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 283.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
