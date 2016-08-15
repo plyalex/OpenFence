@@ -6,7 +6,7 @@
 #include <Wire.h>
 
 
- 
+// Based off https://github.com/kriswiner/MPU-9250/
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in 
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
 //
@@ -201,7 +201,7 @@ int intPin = MPU_INT;  // These can be changed, 2 and 3 are the Arduinos ext int
 int16_t accelCount[3];  // Stores the 16-bit signed accelerometer sensor output
 int16_t gyroCount[3];   // Stores the 16-bit signed gyro sensor output
 int16_t magCount[3];    // Stores the 16-bit signed magnetometer sensor output
-float magCalibration[3] = {0, 0, 0}, magbias[3] = {0, 0, 0};  // Factory mag calibration and mag bias
+float magCalibration[3] = {0, 0, 0}, magbias[3] = {0, 0, 0}, magscale[3] = {0, 0, 0};// Factory mag calibration and mag bias
 float gyroBias[3] = {0, 0, 0}, accelBias[3] = {0, 0, 0}; // Bias corrections for gyro and accelerometer
 float ax, ay, az, gx, gy, gz, mx, my, mz; // variables to hold latest sensor data values 
 int16_t tempCount;   // Stores the real internal chip temperature in degrees Celsius
@@ -360,6 +360,18 @@ void readAccelData(int16_t * destination)
   destination[2] = (int16_t)(((int16_t)rawData[4] << 8) | rawData[5]) ; 
 }
 
+void getAccelvalues(float * destination)
+{
+  readAccelData(accelCount);  // Read the x/y/z adc values   
+  //   // Now we'll calculate the accleration value into actual g's
+  ax = (float)accelCount[0]*aRes - accelBias[0];  // get actual g value, this depends on scale being set
+  ay = (float)accelCount[1]*aRes - accelBias[1];   
+  az = (float)accelCount[2]*aRes - accelBias[2]; 
+  destination[0] = ax ; 
+  destination[1] = ay ;  
+  destination[2] = az ; 
+}
+
 void readGyroData(int16_t * destination)
 {
   uint8_t rawData[6];  // x/y/z gyro register data stored here
@@ -367,6 +379,18 @@ void readGyroData(int16_t * destination)
   destination[0] = (int16_t)(((int16_t)rawData[0] << 8) | rawData[1]) ;  // Turn the MSB and LSB into a signed 16-bit value
   destination[1] = (int16_t)(((int16_t)rawData[2] << 8) | rawData[3]) ;  
   destination[2] = (int16_t)(((int16_t)rawData[4] << 8) | rawData[5]) ; 
+}
+
+void getGyrovalues(float * destination)
+{
+  readGyroData(gyroCount);  // Read the x/y/z adc values
+  // Calculate the gyro value into actual degrees per second
+  gx = (float)gyroCount[0]*gRes - gyroBias[0];  // get actual gyro value, this depends on scale being set
+  gy = (float)gyroCount[1]*gRes - gyroBias[1];  
+  gz = (float)gyroCount[2]*gRes - gyroBias[2];  
+  destination[0] = gx ; 
+  destination[1] = gy ;  
+  destination[2] = gz ; 
 }
 
 void readMagData(int16_t * destination)
@@ -381,6 +405,19 @@ void readMagData(int16_t * destination)
     destination[2] = (int16_t)(((int16_t)rawData[5] << 8) | rawData[4]) ; 
    }
   }
+}
+
+void getMagvalues(float * destination)
+{
+  readMagData(magCount);  // Read the x/y/z adc values   
+  // Calculate the magnetometer values in milliGauss
+  // Include factory calibration per data sheet and user environmental corrections
+  mx = (float)magCount[0]*mRes*magCalibration[0] - magbias[0];  // get actual magnetometer value, this depends on scale being set
+  my = (float)magCount[1]*mRes*magCalibration[1] - magbias[1];  
+  mz = (float)magCount[2]*mRes*magCalibration[2] - magbias[2]; 
+  destination[0] = mx ; 
+  destination[1] = my ;  
+  destination[2] = mz ; 
 }
 
 int16_t readTempData()
@@ -418,6 +455,49 @@ void initAK8963(float * destination)
   delay(10);
 }
 
+void magcalMPU9250(float * dest1, float * dest2) 
+{
+  uint16_t ii = 0, sample_count = 0;
+  int32_t mag_bias[3] = {0, 0, 0}, mag_scale[3] = {0, 0, 0};
+  int16_t mag_max[3] = {0x8000, 0x8000, 0x8000}, mag_min[3] = {0x7FFF, 0x7FFF, 0x7FFF}, mag_temp[3] = {0, 0, 0};
+
+  SerialUSB.println("Mag Calibration: Wave device in a figure eight until done!");
+  delay(4000);
+
+  sample_count = 128;
+  for(ii = 0; ii < sample_count; ii++) {
+    readMagData(mag_temp);  // Read the mag data   
+    for (int jj = 0; jj < 3; jj++) {
+      if(mag_temp[jj] > mag_max[jj]) mag_max[jj] = mag_temp[jj];
+      if(mag_temp[jj] < mag_min[jj]) mag_min[jj] = mag_temp[jj];
+    }
+    SerialUSB.print(mag_temp[0]);SerialUSB.print("\t");SerialUSB.print(mag_temp[1]);SerialUSB.print("\t");SerialUSB.println(mag_temp[2]);
+    delay(135);  // at 8 Hz ODR, new mag data is available every 125 ms
+  }
+
+  // Get hard iron correction
+  mag_bias[0]  = (mag_max[0] + mag_min[0])/2;  // get average x mag bias in counts
+  mag_bias[1]  = (mag_max[1] + mag_min[1])/2;  // get average y mag bias in counts
+  mag_bias[2]  = (mag_max[2] + mag_min[2])/2;  // get average z mag bias in counts
+
+  dest1[0] = (float) mag_bias[0]*mRes*magCalibration[0];  // save mag biases in G for main program
+  dest1[1] = (float) mag_bias[1]*mRes*magCalibration[1];   
+  dest1[2] = (float) mag_bias[2]*mRes*magCalibration[2];  
+
+  // Get soft iron correction estimate
+  mag_scale[0]  = (mag_max[0] - mag_min[0])/2;  // get average x axis max chord length in counts
+  mag_scale[1]  = (mag_max[1] - mag_min[1])/2;  // get average y axis max chord length in counts
+  mag_scale[2]  = (mag_max[2] - mag_min[2])/2;  // get average z axis max chord length in counts
+
+  float avg_rad = mag_scale[0] + mag_scale[1] + mag_scale[2];
+  avg_rad /= 3.0;
+
+  dest2[0] = avg_rad/((float)mag_scale[0]);
+  dest2[1] = avg_rad/((float)mag_scale[1]);
+  dest2[2] = avg_rad/((float)mag_scale[2]);
+
+  SerialUSB.println("Mag Calibration done!");
+}
 
 void initMPU9250()
 {  
@@ -902,5 +982,46 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
             q[3] = q4 * norm;
  
         }
+
+
+    float getHeading(){
+      float mag[3];
+      float magNorm[3];
+      float Accel[3];
+      getMagvalues(mag);  
+      getAccelvalues(Accel);  
+
+      float Roll = atan2(-Accel[0], Accel[2]); // Phi Radians
+
+      float iCos=cos(Roll);
+      float iSin=sin(Roll);
+      magNorm[1]=mag[1]*iCos - mag[2]*iSin;   //Calculate the normalised Mag y component - Accounting for Roll
+      mag[2]=mag[1]*iSin + mag[2]*iCos;       //Rotate Mz
+      Accel[2]=-Accel[0]*iSin + Accel[2]*iCos; //Rotate Az
+
+      float Pitch = atan2(Accel[1], Accel[2]); // Theta Radians
+
+      iCos=cos(Pitch);
+      iSin=sin(Pitch);
+      if (iCos < 0) iCos = -iCos;
+      magNorm[0] = (mag[0] * iCos + mag[2] * iSin);   //Calculate the normalised Mag x component
+      magNorm[2] = (-mag[0] * iSin + mag[2] * iCos);  //Calculate the normalised Mag z component
+
+      float var_compass=atan2(magNorm[1],magNorm[0]) * (180 / PI); // angle in degrees
+
+      // if (var_compass>0)
+      // {
+      //   var_compass=var_compass-360;
+      // }
+      // var_compass=360+var_compass;
+      //SerialUSB.print(mag[0]); SerialUSB.print("\t");
+      //SerialUSB.print(mag[1]); SerialUSB.print("\t");
+      //SerialUSB.print(mag[2]); SerialUSB.print("\t");
+      SerialUSB.print(Pitch* 180/PI); SerialUSB.print("\t");
+      SerialUSB.print(Roll* 180/PI);SerialUSB.print("\t");
+      SerialUSB.println(var_compass);
+      return var_compass;
+    }
   };
 #endif
+
