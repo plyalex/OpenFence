@@ -27,13 +27,14 @@ float Geofence::distance(struct position v, struct position w) {   //Equirectang
 
 
 //Step 2: Test if the point is within the polygon of points
-float Geofence::pointInPolygon(struct position p, struct position points[], int polyCorners) {
+int Geofence::pointInPolygon(struct position p, struct position points[], int polyCorners, float * bearing, float *maxbehind) {
   //Based on http://alienryderflex.com/polygon/
   //oddNodes = 1 means within the polygon, oddNodes = 0 outside the polygon.
   int   i, j=polyCorners-1 ;
   bool  oddNodes=0;
   float maxbehind = 0,temp=0;
   int sidebehind;
+  struct position projection,projectionmax;
 
   for(i=0; i<polyCorners; i++) {		
     if(((points[i].lat< p.lat && points[j].lat>=p.lat) 
@@ -52,17 +53,23 @@ float Geofence::pointInPolygon(struct position p, struct position points[], int 
   	 }
   	for(int i=1; i<polyCorners; i++){ 
     	if( (distBehind(p,points[i-1],points[i])*100000) <0) {
-    		temp = dist2segment(p,points[i-1],points[i]);
+    		temp = dist2segment(p,points[i-1],points[i],&projection);
     		if (temp > maxbehind) {
     			maxbehind = temp; //if further away from side update the max distance behind
     		 	sidebehind=i;
+          projectionmax=projection;
 			}
     	}
     }
+    //Determine left or right hand side alert
+    bearing = bearing2fence(p,projectionmax);
+    //Get Compass bearing, determine left of right
+    return 0; //Point Not in Polygon
   }	
-  //Determine left or right hand side alert
+  
 
-  return maxbehind; 
+
+  return 1; //Point is within the boundary
 }
 
 //Step 3: Find which sides of the boundary we are outside
@@ -84,7 +91,7 @@ float Geofence::distBehind(struct position p, struct position w, struct position
 }
 
 //Step 4: Get an accurate shortest distance to a side of the fence
-float Geofence::dist2segment(struct position p, struct position v, struct position w){
+float Geofence::dist2segment(struct position p, struct position v, struct position w, struct position * projection){
   //Check if the two side points are in the same location (avoid dividing by zero later)
   float l = distance(v,w);
   if(l==0) return distance(p,v);
@@ -94,21 +101,37 @@ float Geofence::dist2segment(struct position p, struct position v, struct positi
   float miny = MIN(v.lon, w.lon);
   float maxy = MAX(v.lon, w.lon);
 
-  struct position projection;
+  //struct position projection;
   if(p.lat<minx && p.lon<miny){         //p does not fall between the two points and is closest to the lower corner
-    projection.lat = minx; 
-    projection.lon = miny; 
+    projection->lat = minx; 
+    projection->lon = miny; 
   }else if(p.lat>maxx && p.lon>maxy){   //p does not fall between the two points and is closest to the lower corner
-    projection.lat = maxx; 
-    projection.lon = maxy; 
+    projection->lat = maxx; 
+    projection->lon = maxy; 
   }else{                                //p does fall between the two points, project point onto the line
     float x1=v.lat, y1=v.lon, x2=w.lat, y2=w.lon, x3=p.lat, y3=p.lon;
     float px = x2-x1, py = y2-y1, dAB = px*px + py*py;
     float u = ((x3 - x1) * px + (y3 - y1) * py) / dAB;
     float x = x1 + u * px, y = y1 + u * py;
-    projection.lat = x; 
-    projection.lon = y; 
+    projection->lat = x; 
+    projection->lon = y; 
   }
   //Return the distance to the closest point on the line.
-  return distance(p, projection);
+  return distance(p, *projection);
 }
+
+//Bearing from the closest Point on fence to the collar
+float Geofence::bearing2fence(struct position p, struct position projection){
+  float y = sin(p.lon-projection.lon) * cos(p.lat);
+  float x = cos(projection.lat)*sin(p.lat) - sin(projection.lat)*cos(p.lat)*cos(p.lon-projection.lon);
+  float brng = atan2(y, x);
+  // if (brng>0)
+  // {
+  //   brng=brng-2*M_PI;
+  // }
+  // brng=2*M_PI+brng;
+  return brng;
+}
+
+
+

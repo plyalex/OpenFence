@@ -15,7 +15,7 @@ class Geofence
 	public:
 		Geofence(void);
 		float distance(struct position v, struct position w);
-		float pointInPolygon(struct position p, struct position points[], int polyCorners);
+		int pointInPolygon(struct position p, struct position points[], int polyCorners, float * bearing, float *maxbehind);
 		
 
 	private:
@@ -23,7 +23,7 @@ class Geofence
 		float sqr(float x);
 		float distBehind(struct position p, struct position w, struct position v);
 		float dist2segment(struct position p, struct position v, struct position w);
-
+		float Geofence::bearing2fence(struct position p, struct position projection);
 };
 
 
