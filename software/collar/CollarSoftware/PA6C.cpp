@@ -1,7 +1,7 @@
 #include "PA6C.h"
 #include "PinDefines.h"
 // global variables
-char PA6C::buffer[BUFFSIZ];        // string buffer for the sentence
+char PA6C::bufferPA6C[BUFFSIZ];        // string buffer for the sentence
 char PA6C::buffidx;   
 
 //Check that the buffer digits don't change length
@@ -21,16 +21,16 @@ void PA6C::standbyGPS(){
 
 void PA6C::getGPRMC(){
   readLine();
-	// while(strncmp(buffer, "$GPRMC",6) != 0){
-	// 	readLine(); 
-	// }
-  SerialUSB.println(buffer);
+	while(strncmp(bufferPA6C, "$GPRMC",6) != 0){
+		readLine(); 
+	}
+  SerialUSB.println(bufferPA6C);
 	return;
 }
 
 float PA6C::getLatitude(){
 	char *parseptr;     // a character pointer for parsing
-    parseptr = buffer+20;
+    parseptr = bufferPA6C+20;
 	uint32_t raw = parsedecimal(parseptr);
 	if (raw != 0) {
   		raw *= 10000;
@@ -49,7 +49,7 @@ float PA6C::getLatitude(){
 
 float PA6C::getLongitude(){
   char *parseptr;     // a character pointer for parsing
-  parseptr = buffer+32;
+  parseptr = bufferPA6C+32;
   uint32_t raw = parsedecimal(parseptr);
   if (raw != 0) {
       raw *= 10000;
@@ -69,7 +69,7 @@ float PA6C::getLongitude(){
 int PA6C::getTime(){
   // hhmmss time data
   char *parseptr;
-  parseptr = buffer+7;
+  parseptr = bufferPA6C+7;
   uint32_t tmp = parsedecimal(parseptr); 
   int hour = tmp/ 10000;
   int minute = (tmp / 100) % 100;
@@ -79,7 +79,7 @@ int PA6C::getTime(){
 
 int PA6C::getDate(){
   char *parseptr;     // a character pointer for parsing
-  parseptr = buffer+57;
+  parseptr = bufferPA6C+57;
   uint32_t tmp = parsedecimal(parseptr); 
   //uint8_t date = tmp / 10000;
   //month = (tmp / 100) % 100;
@@ -105,15 +105,23 @@ uint32_t PA6C::parsedecimal(char *str){
 void PA6C::readLine(void){
   char c;
   buffidx = 0;
+  // GPSSerial.println("$PMTK220,1000*1F");
+  // GPSSerial.flush();
+  // while(!GPSSerial.available()){}
+  // bufferPA6C=GPSSerial.readStringUntil(c);
+  // standbyGPS();
+  GPSSerial.println("$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29"); //Print GPRMC only
+  GPSSerial.flush();
   while(1){
     while(!GPSSerial.available()){}
     c=GPSSerial.read();
     if (c=='\n')
       continue;
     if ((buffidx == BUFFSIZ-1) || (c=='\r')){
-      buffer[buffidx]=0;
+      bufferPA6C[buffidx]=0;
       return;
     }
-    buffer[buffidx++]=c;
+    bufferPA6C[buffidx++]=c;
   }
+  standbyGPS();
 }

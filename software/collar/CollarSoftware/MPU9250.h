@@ -464,7 +464,7 @@ void magcalMPU9250(float * dest1, float * dest2)
   SerialUSB.println("Mag Calibration: Wave device in a figure eight until done!");
   delay(4000);
 
-  sample_count = 128;
+  sample_count = 256;
   for(ii = 0; ii < sample_count; ii++) {
     readMagData(mag_temp);  // Read the mag data   
     for (int jj = 0; jj < 3; jj++) {
@@ -986,10 +986,21 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
 
     float getHeading(){
       float mag[3];
+      float magAv[3]={0,0,0};
       float magNorm[3];
       float Accel[3];
-      getMagvalues(mag);  
-      getAccelvalues(Accel);  
+      float AccelAv[3]={0,0,0};
+
+      for(int i=0; i<3; i++){
+        getMagvalues(mag);  
+        getAccelvalues(Accel); 
+        magAv[0] += mag[0];magAv[1] += mag[1];magAv[2] += mag[2];
+        AccelAv[0] += Accel[0];AccelAv[1] += Accel[1];AccelAv[2] += Accel[2];
+      }
+      for(int i=0; i<3; i++){
+        mag[i] = magAv[i]/3.0;
+        Accel[i] = AccelAv[i]/3.0;
+      }
 
       float Roll = atan2(-Accel[0], Accel[2]); // Phi Radians
 
@@ -1017,10 +1028,54 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
       //SerialUSB.print(mag[0]); SerialUSB.print("\t");
       //SerialUSB.print(mag[1]); SerialUSB.print("\t");
       //SerialUSB.print(mag[2]); SerialUSB.print("\t");
-      SerialUSB.print(Pitch* 180/PI); SerialUSB.print("\t");
-      SerialUSB.print(Roll* 180/PI);SerialUSB.print("\t");
-      SerialUSB.println(var_compass);
+      //SerialUSB.print(Pitch* 180/PI); SerialUSB.print("\t");
+      //SerialUSB.print(Roll* 180/PI);SerialUSB.print("\t");
+      //SerialUSB.println(var_compass);
       return var_compass;
+    }
+
+    void wakeOnmotion(){
+
+      byte c = readByte(MPU9250_ADDRESS, PWR_MGMT_1); 
+      c = c & 0x70; //Clear bits 6:4
+      writeByte(MPU9250_ADDRESS, PWR_MGMT_1, c); // Clear sleep mode bit (6), 
+
+
+      c = readByte(MPU9250_ADDRESS, PWR_MGMT_2);  
+      c = c & 0xC0; //Clear bits 5:0
+      c = c | 0x07;
+      writeByte(MPU9250_ADDRESS, PWR_MGMT_2, c);  // Disable Gyro
+
+      c = readByte(MPU9250_ADDRESS, ACCEL_CONFIG2); // get current ACCEL_CONFIG2 register value
+      c = c & ~0x0F; // Clear accel_fchoice_b (bit 3) and A_DLPFG (bits [2:0])  
+      c = c | 0x01;  // Set accelerometer rate to 184Hz
+      c = c | 0x04;  // Set accel_fchoice_b
+      writeByte(MPU9250_ADDRESS, ACCEL_CONFIG2, c); // Write new ACCEL_CONFIG2 register value
+
+
+      writeByte(MPU9250_ADDRESS, INT_ENABLE, 0x40);     // Enable Motion detect interrupt
+
+      c = readByte(MPU9250_ADDRESS, MOT_DETECT_CTRL);  
+      c = c | 0xC0;
+      writeByte(MPU9250_ADDRESS, MOT_DETECT_CTRL, c);  // Turn on Motion detect 
+
+      writeByte(MPU9250_ADDRESS, WOM_THR, 0x0F);        // Set Motion Threshold
+
+      c = readByte(MPU9250_ADDRESS, MOT_DETECT_CTRL);
+      c = c & 0x0F;  
+      c = c | 0x01;
+      writeByte(MPU9250_ADDRESS, LP_ACCEL_ODR, c);   // Slow Wake frequency  
+
+      c = readByte(MPU9250_ADDRESS, PWR_MGMT_1); 
+      c = c | 0x20; //Set Cycle
+      writeByte(MPU9250_ADDRESS, PWR_MGMT_1, c); //  Turn on Cycle
+
+
+    }
+
+    byte readStatus(){
+      SerialUSB.println(readByte(MPU9250_ADDRESS, INT_ENABLE),HEX);
+      return readByte(MPU9250_ADDRESS, INT_STATUS);
     }
   };
 #endif

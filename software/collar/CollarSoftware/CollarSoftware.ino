@@ -3,100 +3,87 @@
 #include "PA6C.h"
 #include "MPU9250.h"
 #include "Audio_OF.h"
-#include "Adafruit_ZeroTimer.h"
+#include "LoRa_OF.h"
+#include "Geofence.h"
 #include <Wire.h>
+#include <SPI.h>
 #include <RTCZero.h>
 
+#define WAITGPSFIX
+//#define GPSTestPoints
 
-//MPU 0x68, POT 0x2F
-//GPS_TX, RX = Serial
-//Serial Monitor = SerialUSB
 MCP73871 battery;
 RTCZero rtc;
 PA6C gps;
 MPU9250 mpu9250;
 Audio_OF audio;
+LoRa_OF lora;
+Geofence fence;
 
-// Adafruit_ZeroTimer zt4 = Adafruit_ZeroTimer(4);
+//Global Variables - Updatable in Web Interface
+int distanceThresholds[]={0, 2, 4, 6, 8, 10}; //Distance in metres
+// magbias[]={-90,400,0}; //Float in MPU9250.h library
 
-// // timer 4 callback, set dac output!
-// volatile uint16_t dacout=0;
-// void Timer4Callback0(struct tc_module *const module_inst)
-// {
-//   //analogWrite(A0, dacout++); // too slow!
+int polyCorners = 0;
+position fencePoints[255];
+uint8_t fenceversion = 0;
 
-//   // we'll write the DAC by hand
-//   // wait till it's ready
-//   while (DAC->STATUS.reg & DAC_STATUS_SYNCBUSY);
-//   // and write the data  
-//   DAC->DATA.reg = dacout++;
+position me, metransmitted;
+datetime nowdt;
+int alerts = 0;
+int shocks = 0;
 
-//   // wraparound when we hit 10 bits  
-//   if (dacout == 0x400) {
-//     dacout = 0;
-//   }
-// }
+
 
 void setup() {
   init_pins();
   init_comms();
-  //audio.initAudio();
-  audio.enableAmp();
-  analogWriteResolution(10);
-  analogWrite(A0, 128); // initialize the DAC
-
+  delay(3000);
+  audio.initAudio();
   rtc.begin(); // initialize RTC
+  gps.initGPS();
+  lora.initLoRa();
+  init_mpu();
+  //mpu9250.wakeOnmotion();
 
-  // zt4.configure(TC_CLOCK_PRESCALER_DIV1, // prescaler
-  //               TC_COUNTER_SIZE_8BIT,   // bit width of timer/counter
-  //               TC_WAVE_GENERATION_MATCH_PWM  // match style
-  //               );
+  // while(1){
+  //   float compass = mpu9250.getHeading();
+  //   SerialUSB.println(compass);
+  //   delay(100);
+  // }
 
-  // zt4.setPeriodMatch(10000, 1, 0); // ~350khz, 1 match, channel 0
-  // zt4.setCallback(true, TC_CALLBACK_CC_CHANNEL0, Timer4Callback0);  // set DAC in the callback
-  //zt4.enable(true);
+  fencePoints[0].lat=145.138458;  
+  fencePoints[0].lon=-37.911625; 
+  fencePoints[1].lat=145.138707;
+  fencePoints[1].lon=-37.911662;
+  fencePoints[2].lat=145.138653;
+  fencePoints[2].lon=-37.911887;
+  fencePoints[3].lat=145.138399; 
+  fencePoints[3].lon=-37.911850;
+  polyCorners=4;
 
+  SerialUSB.println("Setup Complete");
 
-  mpu9250.resetMPU9250(); // Reset registers to default in preparation for device calibration
-  mpu9250.calibrateMPU9250(gyroBias, accelBias); // Calibrate gyro and accelerometers, load biases in bias registers  
-  SerialUSB.print("x gyro bias = ");
-  SerialUSB.println(gyroBias[0]);
-  SerialUSB.print("y gyro bias = ");
-  SerialUSB.println(gyroBias[1]);
-  SerialUSB.print("z gyro bias = "); 
-  SerialUSB.println(gyroBias[2]);
-  SerialUSB.print("x accel bias = "); 
-  SerialUSB.println(accelBias[0]);
-  SerialUSB.print("y accel bias = "); 
-  SerialUSB.println(accelBias[1]);
-  SerialUSB.print("z accel bias = "); 
-  SerialUSB.println(accelBias[2]);
-  delay(2000);
-  mpu9250.initMPU9250(); 
-  SerialUSB.println("MPU9250 initialized for active data mode...."); // Initialize device for active mode read of acclerometer, gyroscope, and temperature
-  mpu9250.initAK8963(magCalibration);
-  SerialUSB.println("AK8963 initialized for active data mode...."); // Initialize device for active mode read of magnetometer
-  SerialUSB.print("Accelerometer full-scale range (g)= ");
-  SerialUSB.println(2.0f*(float)(1<<Ascale));
-  SerialUSB.print("Gyroscope full-scale range (deg/s)= ");
-  SerialUSB.println(250.0f*(float)(1<<Gscale));
-  if(Mscale == 0) SerialUSB.println("Magnetometer resolution = 14  bits");
-  if(Mscale == 1) SerialUSB.println("Magnetometer resolution = 16  bits");
-  if(Mmode == 2) SerialUSB.println("Magnetometer ODR = 8 Hz");
-  if(Mmode == 6) SerialUSB.println("Magnetometer ODR = 100 Hz");
-  delay(2000);
-  mpu9250.getAres(); // Get accelerometer sensitivity
-  mpu9250.getGres(); // Get gyro sensitivity
-  mpu9250.getMres(); // Get magnetometer sensitivity
-  SerialUSB.print("Accelerometer sensitivity is LSB/g : ");
-  SerialUSB.println(1.0f/aRes);
-  SerialUSB.print("Gyroscope sensitivity is LSB/deg/s : ");
-  SerialUSB.println(1.0f/gRes);
-  SerialUSB.print("Magnetometer sensitivity is LSB/G : ");
-  SerialUSB.println(1.0f/mRes);
-  magbias[0] = +470.;  // User environmental x-axis correction in milliGauss, should be automatically calculated
-  magbias[1] = +120.;  // User environmental x-axis correction in milliGauss
-  magbias[2] = +125.;  // User environmental x-axis correction in milliGauss
+  #ifdef WAITGPSFIX
+  SerialUSB.print("Getting GPS Fix");
+  bool gpsfix=0;
+  while(!gpsfix){
+    bool temp=digitalRead(GPS_FIX);
+    delay(1000);
+    bool temp1=digitalRead(GPS_FIX);
+    if(temp == 0 && temp1 == 0) gpsfix=1;
+    SerialUSB.print(".");
+  }
+  SerialUSB.println("Fix Obtained");
+  audio.enableAmp();
+  audio.setvolumeBoth(20);
+  delay(500);
+  audio.disableAmp();
+  delay(500);
+  audio.enableAmp();
+  delay(500);
+  audio.disableAmp();
+  #endif
 }
 
 
@@ -104,74 +91,158 @@ int dacValue = 0;
 int i=0;
 
 void loop() {
-  audio.setvolumeRight(i);
+  //SerialUSB.println("Alive...");
+  
+
   //audioout();
 
+  //battery.printStatus();
   //gps.getGPRMC();
 
 
-  if(mpu9250.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {  // On interrupt, check if data ready interrupt
+  // if(mpu9250.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {  // On interrupt, check if data ready interrupt
 
-    mpu9250.readAccelData(accelCount);  // Read the x/y/z adc values   
-    // Now we'll calculate the accleration value into actual g's
-    ax = (float)accelCount[0]*aRes - accelBias[0];  // get actual g value, this depends on scale being set
-    ay = (float)accelCount[1]*aRes - accelBias[1];   
-    az = (float)accelCount[2]*aRes - accelBias[2];  
+  //   mpu9250.readAccelData(accelCount);  // Read the x/y/z adc values   
+  //   // Now we'll calculate the accleration value into actual g's
+  //   ax = (float)accelCount[0]*aRes - accelBias[0];  // get actual g value, this depends on scale being set
+  //   ay = (float)accelCount[1]*aRes - accelBias[1];   
+  //   az = (float)accelCount[2]*aRes - accelBias[2];  
    
-    mpu9250.readGyroData(gyroCount);  // Read the x/y/z adc values
-    // Calculate the gyro value into actual degrees per second
-    gx = (float)gyroCount[0]*gRes - gyroBias[0];  // get actual gyro value, this depends on scale being set
-    gy = (float)gyroCount[1]*gRes - gyroBias[1];  
-    gz = (float)gyroCount[2]*gRes - gyroBias[2];   
+  //   mpu9250.readGyroData(gyroCount);  // Read the x/y/z adc values
+  //   // Calculate the gyro value into actual degrees per second
+  //   gx = (float)gyroCount[0]*gRes - gyroBias[0];  // get actual gyro value, this depends on scale being set
+  //   gy = (float)gyroCount[1]*gRes - gyroBias[1];  
+  //   gz = (float)gyroCount[2]*gRes - gyroBias[2];   
   
-    mpu9250.readMagData(magCount);  // Read the x/y/z adc values   
-    // Calculate the magnetometer values in milliGauss
-    // Include factory calibration per data sheet and user environmental corrections
-    mx = (float)magCount[0]*mRes*magCalibration[0] - magbias[0];  // get actual magnetometer value, this depends on scale being set
-    my = (float)magCount[1]*mRes*magCalibration[1] - magbias[1];  
-    mz = (float)magCount[2]*mRes*magCalibration[2] - magbias[2];   
-  }
+  //   mpu9250.readMagData(magCount);  // Read the x/y/z adc values   
+  //   // Calculate the magnetometer values in milliGauss
+  //   // Include factory calibration per data sheet and user environmental corrections
+  //   mx = (float)magCount[0]*mRes*magCalibration[0] - magbias[0];  // get actual magnetometer value, this depends on scale being set
+  //   my = (float)magCount[1]*mRes*magCalibration[1] - magbias[1];  
+  //   mz = (float)magCount[2]*mRes*magCalibration[2] - magbias[2];   
+  // }
 
 
-  SerialUSB.print("Accel x y z: "); SerialUSB.print("\t"); 
-    SerialUSB.print(1000*ax); SerialUSB.print("\t"); 
-    SerialUSB.print(1000*ay); SerialUSB.print("\t"); 
-    SerialUSB.println(1000*az);
 
-  SerialUSB.print("Gyro x y z: "); SerialUSB.print("\t"); 
-    SerialUSB.print(gx); SerialUSB.print("\t"); 
-    SerialUSB.print(gy); SerialUSB.print("\t"); 
-    SerialUSB.println(gz); 
-
-  SerialUSB.print("Mag x y z: "); SerialUSB.print("\t"); 
-    SerialUSB.print(mx); SerialUSB.print("\t"); 
-    SerialUSB.print(my); SerialUSB.print("\t"); 
-    SerialUSB.println(mz); 
-    
-    tempCount = mpu9250.readTempData();  // Read the adc values
-    temperature = ((float) tempCount) / 333.87f + 21.0f; // Temperature in degrees Centigrade
-    SerialUSB.print(" temperature (C)= ");
-    SerialUSB.println(temperature); 
-
+#ifndef GPSTestPoints
   gps.getGPRMC();
+  me.lat=gps.getLatitude();
+  me.lon=gps.getLongitude();
+  nowdt.time=gps.getTime();
+  nowdt.date=gps.getDate();
+#endif
 
-
-
-  delay(500);
-}
-
-
-
-
-
-void audioout(){
+#ifdef GPSTestPoints
   byte seconds=rtc.getSeconds();
-  byte seconds2=rtc.getSeconds();
-  while(seconds == seconds2){
-    int dacValue = !dacValue;
-    delayMicroseconds(600);
-    // Generate a voltage between 0 and 3.3V.
-    analogWrite(PIN_DAC0, dacValue);
-    seconds2=rtc.getSeconds();
+  if(seconds < 10){     //Inside
+    me.lat=-37.911765; 
+    me.lon=145.138300;
+    nowdt.time=51810;
+    nowdt.date=240516;
+  }else if(seconds <20){
+    me.lat=-37.911643; 
+    me.lon= 145.137766;
+    nowdt.time=51820;
+    nowdt.date=240516;
+  }else if(seconds <30){
+    me.lat=-37.911623;
+    me.lon=145.137901;
+    nowdt.time=51830;
+    nowdt.date=240516;
+  }else if(seconds <40){
+    me.lat=-37.911520;
+    me.lon=145.138454;
+    nowdt.time=51840;
+    nowdt.date=240516;
+  }else if(seconds <50){
+    me.lat=-37.911997;
+    me.lon=145.138565;
+    nowdt.time=51850;
+    nowdt.date=240516;
+  }else if(seconds <60){
+    me.lat=-37.912090;
+    me.lon=145.138230;
+    nowdt.time=51900;
+    nowdt.date=240516;
   }
+#endif
+
+  if(fence.distance(me, metransmitted) > 5){
+    metransmitted=me;
+    SerialUSB.println("Sending Packet");
+    lora.sendPosition(me, nowdt, alerts, shocks, fenceversion);
+  }
+   
+  SerialUSB.println(polyCorners);
+  SerialUSB.println(fenceversion);
+  SerialUSB.println(fencePoints[0].lat);
+
+
+
+  fenceProperty result=fence.geofence(me, fencePoints, polyCorners);
+  float compass = mpu9250.getHeading();
+
+  SerialUSB.println(compass);
+  SerialUSB.println(result.sideOutside);
+  SerialUSB.println(result.distance);
+  SerialUSB.println(result.bearing);
+
+  static bool outside;
+
+  if(result.distance > 0){
+
+    if(!outside){
+      alerts++;
+      outside=1;
+    } 
+    
+    int val = compass-result.bearing;
+    int volume = 10; //result.distance * 100;
+    if(volume>100) volume=100;
+
+    if(val > 180) val=val-360;
+    else if(val < -180) val=val+360;
+    SerialUSB.println(val);
+    if(val>0){
+      if(val>90){
+        audio.setvolumeBoth(0);
+        audio.disableAmp();
+      }
+      else{
+        //Sound RHS
+        audio.enableAmp();
+        audio.setvolumeRight(volume);
+        audio.setvolumeLeft(0);
+      } 
+    }
+    else{
+      if(val < -90){
+        audio.setvolumeBoth(0);
+        audio.disableAmp();
+      }
+      else{
+        //Sound LHS
+        audio.enableAmp();
+        audio.setvolumeLeft(volume);
+        audio.setvolumeRight(0);
+
+      } 
+    }
+
+
+  }else{
+    outside=0;
+  }
+
+
+  // SerialUSB.print(digitalRead(MPU_INT)); SerialUSB.print("\t Int Status: ");
+  // if(digitalRead(MPU_INT)){
+  //   SerialUSB.println(mpu9250.readStatus(),HEX);
+  //   mpu9250.wakeOnmotion();
+    
+  // }
+  // else SerialUSB.println("No Interrupt");
+
+  delay(1000);
 }
+

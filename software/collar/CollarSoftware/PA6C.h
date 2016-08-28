@@ -26,7 +26,7 @@ class PA6C
 		void readLine(void);
 
 		// global variables
-		static char buffer[BUFFSIZ];        // string buffer for the sentence
+		static char bufferPA6C[BUFFSIZ];        // string buffer for the sentence
 		static char buffidx;                // an indexer into the buffer
 
 };

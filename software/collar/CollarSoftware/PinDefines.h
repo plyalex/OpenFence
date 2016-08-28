@@ -18,4 +18,9 @@
 
 	#define GPSSerial 	Serial1
 
+	//MPU 0x68, POT 0x2F
+	//GPS_TX, RX = Serial1
+	//Serial Monitor = SerialUSB
+
+
 #endif
