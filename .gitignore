@@ -46,3 +46,5 @@ software/web/node_modules
 hardware/pcbs/MainCollar/MainCollarREV1.zip
 
 software/web/Untitled-1
+
+*.pyc
