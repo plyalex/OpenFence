@@ -1,4 +1,5 @@
-var Animal            = require('./animal-model.js');
+var Animallocation            = require('./animallocation-model.js');
+var mongoose    = require('mongoose');
 
 
 // Opens App Routes
@@ -8,11 +9,11 @@ module.exports = function(app) {
     // GET Routes
     // --------------------------------------------------------
     // Retrieve records for all users in the db
-    app.get('/animals/list', function(req, res){
+    app.get('/tracking/list', function(req, res){
 
         // Uses Mongoose schema to run the search (empty conditions)
-        var query =Animal.find({});
-        query.setOptions({sort: "name"});
+        var query =Animallocation.find({});
+        query.setOptions({sort: "animal"});
         query.exec(function(err, animals){
             if(err)
                 res.send(err);
@@ -23,15 +24,17 @@ module.exports = function(app) {
     });
     
         // Retrieves JSON records for all users who meet a certain set of query conditions
-    app.post('/animals/list', function(req, res){
+    app.post('/tracking/list', function(req, res){
 
         // Grab all of the query parameters from the body.
         var oldestDate      = req.body.oldestDate;
         var newestDate      = req.body.newestDate;
         var animalID        = req.body.animalID;
-
+        //var animalID        = "ObjectId(\x22"+req.body.animalID+"\x22)";
+        //"{\x22_id\x22:\x22"+id2Delete+"\x22}"
+        console.log(mongoose.types.ObjectId(animalID));
         // Opens a generic Mongoose Query. Depending on the post body we will...
-        var query = Animal.find({});
+        var query = Animallocation.find({});
 
  
         if(oldestDate){
@@ -44,8 +47,8 @@ module.exports = function(app) {
         }
 
         // ...include filter for HTML5 Verified Locations
-        if(animalID){
-            query = query.where('animalID').equals(animalID);
+        if(animalID){   //& animalID != 0
+            query = query.where('animalid').equals(mongoose.types.ObjectId(animalID));
         }
         console.log(animalID);
         // Execute Query and Return the Query Results
@@ -59,10 +62,10 @@ module.exports = function(app) {
     });
     
     // Provides method for saving new points in the db
-    app.post('/animals/add', function(req, res){
+    app.post('/tracking/add', function(req, res){
         console.log("Adding a new Point")
-        // Creates a new Animal point based on the Mongoose schema and the post body.
-        var newpoint = new Animal(req.body);
+        // Creates a new Animallocation point based on the Mongoose schema and the post body.
+        var newpoint = new Animallocation(req.body);
         console.log(req.body)
         // New Fence is saved in the db.
         newpoint.save(function(err){
@@ -70,7 +73,7 @@ module.exports = function(app) {
                 res.send(err);
 
             // Uses Mongoose schema to run the search (empty conditions)
-            var query = Animal.find({});
+            var query = Animallocation.find({});
             query.setOptions({sort: "order"});
             query.exec(function(err, animals){
             if(err)

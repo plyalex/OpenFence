@@ -12,7 +12,8 @@ var app             = express();
 // Express Configuration
 // -----------------------------------------------------
 // Sets the connection to MongoDB
-mongoose.connect("mongodb://localhost/OpenFence");
+//mongoose.connect("mongodb://localhost/OpenFence");
+mongoose.connect('mongodb://openfence1:$9GF7bz!qC$t@ds145385.mlab.com:45385/openfence');
 
 // Logging and Parsing
 app.use(express.static(__dirname + '/public'));                 // sets the static files location to public
@@ -28,6 +29,7 @@ app.use(methodOverride());
 // ------------------------------------------------------
 require('./app/routes.js')(app);
 require('./app/animal-routes.js')(app);
+require('./app/animallocation-routes.js')(app);
 
 // Listen
 // -------------------------------------------------------

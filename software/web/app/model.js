@@ -26,4 +26,4 @@ FenceSchema.pre('save', function(next){
 FenceSchema.index({location: '2dsphere'});
 
 // Exports the UserSchema for use elsewhere. Sets the MongoDB collection to be used as: "scotch-users" (adds the s)
-module.exports = mongoose.model('fence-location', FenceSchema);
+module.exports = mongoose.model('fencelocation', FenceSchema);

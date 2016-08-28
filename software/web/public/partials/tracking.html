@@ -45,6 +45,7 @@
         <form>
             <div class="form-group">
             <label for="animalID">Animal ID:</label>
+                <select data-ng-options="o.name for o in animals" data-ng-model="selectedAnimal"></select>
                 <input type="text" class="form-control" name="animalID" ng-model="formData.animalID">
             </div>
             

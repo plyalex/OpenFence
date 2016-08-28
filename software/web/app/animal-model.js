@@ -12,13 +12,13 @@ var Schema      = mongoose.Schema;
 
 // Creates a User Schema. This will be the basis of how user data is stored in the db
 var AnimalSchema = new Schema({
-    animal: {type: String, required: true},
+    RF_ID: {type: Number, required: true},
+    name: {type: String, required: true},
     paddock: {type: Number, required: true},
-    location: {type: [Number], required: true}, // [Long, Lat]
-    alerts: {type: Number, required: true},
-    shocks: {type: Number, required: true},
-    sent_at: {type: Date, required: true},
-    //children: [AnimalPositionSchema],
+    born: {type: Date, required: true},
+    breed: {type: String, required: true}, 
+    gender: {type: String, required: true},
+    comments: {type: String, required: true},
     created_at: {type: Date, default: Date.now},
     updated_at: {type: Date, default: Date.now}
 });

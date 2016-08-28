@@ -37,7 +37,14 @@ trackingCtrl.controller('trackingCtrl', function($scope, $http, $rootScope, geol
     $scope.formData.newestDate = now;
     //now.setMonth(now.getMonth()-1);
     //$scope.formData.oldestDate = now;
-    
+    $scope.animals=[];
+    $scope.animals[0]={name: "All", id: null};
+    $.getJSON( '/animals/list', function( data ) {
+        data.forEach(function(n, i){
+            $scope.animals[i+1]={name: n.name, id: n._id};
+        });
+    });
+    $scope.selectedAnimal = $scope.animals[0];
     
     
     // Functions
@@ -77,10 +84,9 @@ trackingCtrl.controller('trackingCtrl', function($scope, $http, $rootScope, geol
         queryBody = {
             oldestDate: $scope.formData.oldestDate,
             newestDate: $scope.formData.newestDate,
-            animalID  : $scope.formData.animalID
+            animalID  : $scope.selectedAnimal.id
         };
-
-        
+        console.log($scope.selectedAnimal.id);
         // Post the queryBody to the /query POST route to retrieve the filtered results
         $http.post('/tracking/list', queryBody)
             
