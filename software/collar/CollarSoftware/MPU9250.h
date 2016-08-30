@@ -1034,42 +1034,38 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
       return var_compass;
     }
 
-    void wakeOnmotion(){
-
+    void wakeOnmotion(uint8_t threshold){
       byte c = readByte(MPU9250_ADDRESS, PWR_MGMT_1); 
-      c = c & 0x70; //Clear bits 6:4
+      c = c & 0x8F; //Clear bits 6:4
       writeByte(MPU9250_ADDRESS, PWR_MGMT_1, c); // Clear sleep mode bit (6), 
-
 
       c = readByte(MPU9250_ADDRESS, PWR_MGMT_2);  
       c = c & 0xC0; //Clear bits 5:0
-      c = c | 0x07;
+      c = c | 0x07; //Set bits 2:0
       writeByte(MPU9250_ADDRESS, PWR_MGMT_2, c);  // Disable Gyro
 
-      c = readByte(MPU9250_ADDRESS, ACCEL_CONFIG2); // get current ACCEL_CONFIG2 register value
+      c = readByte(MPU9250_ADDRESS, ACCEL_CONFIG2); 
       c = c & ~0x0F; // Clear accel_fchoice_b (bit 3) and A_DLPFG (bits [2:0])  
       c = c | 0x01;  // Set accelerometer rate to 184Hz
       c = c | 0x04;  // Set accel_fchoice_b
-      writeByte(MPU9250_ADDRESS, ACCEL_CONFIG2, c); // Write new ACCEL_CONFIG2 register value
-
+      writeByte(MPU9250_ADDRESS, ACCEL_CONFIG2, c);     // Write new ACCEL_CONFIG2 register value
 
       writeByte(MPU9250_ADDRESS, INT_ENABLE, 0x40);     // Enable Motion detect interrupt
 
       c = readByte(MPU9250_ADDRESS, MOT_DETECT_CTRL);  
       c = c | 0xC0;
-      writeByte(MPU9250_ADDRESS, MOT_DETECT_CTRL, c);  // Turn on Motion detect 
+      writeByte(MPU9250_ADDRESS, MOT_DETECT_CTRL, c);   // Turn on Motion detect 
 
-      writeByte(MPU9250_ADDRESS, WOM_THR, 0x0F);        // Set Motion Threshold
+      writeByte(MPU9250_ADDRESS, WOM_THR, threshold);   // Set Motion Threshold
 
-      c = readByte(MPU9250_ADDRESS, MOT_DETECT_CTRL);
+      c = readByte(MPU9250_ADDRESS, LP_ACCEL_ODR);
       c = c & 0x0F;  
-      c = c | 0x01;
-      writeByte(MPU9250_ADDRESS, LP_ACCEL_ODR, c);   // Slow Wake frequency  
+      c = c | 0x06;
+      writeByte(MPU9250_ADDRESS, LP_ACCEL_ODR, c);      // Slow Wake frequency  
 
       c = readByte(MPU9250_ADDRESS, PWR_MGMT_1); 
-      c = c | 0x20; //Set Cycle
-      writeByte(MPU9250_ADDRESS, PWR_MGMT_1, c); //  Turn on Cycle
-
+      c = c | 0x29; //Set Cycle
+      writeByte(MPU9250_ADDRESS, PWR_MGMT_1, c);        //  Turn on Cycle
 
     }
 
