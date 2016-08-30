@@ -4,6 +4,7 @@
 #define PA6C_h
 
 #include "Arduino.h"
+#include "PinDefines.h"
 
 #define BUFFSIZ 90 // plenty big
 

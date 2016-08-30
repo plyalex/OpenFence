@@ -1,6 +1,5 @@
 #include "PinDefines.h"
 #include "MCP73871.h"
-#include "PA6C.h"
 #include "MPU9250.h"
 #include "Audio_OF.h"
 #include "LoRa_OF.h"
@@ -8,13 +7,15 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <RTCZero.h>
+#include <TinyGPS++.h>
 
-#define WAITGPSFIX
-//#define GPSTestPoints
+
+//#define WAITGPSFIX
+#define GPSTestPoints
 
 MCP73871 battery;
 RTCZero rtc;
-PA6C gps;
+TinyGPSPlus gps;
 MPU9250 mpu9250;
 Audio_OF audio;
 LoRa_OF lora;
@@ -39,12 +40,14 @@ void setup() {
   init_pins();
   init_comms();
   delay(3000);
+  init_gps();
   audio.initAudio();
   rtc.begin(); // initialize RTC
-  gps.initGPS();
+
+
   lora.initLoRa();
   init_mpu();
-  //mpu9250.wakeOnmotion();
+  //mpu9250.wakeOnmotion(0x02);
 
   // while(1){
   //   float compass = mpu9250.getHeading();
@@ -125,11 +128,7 @@ void loop() {
 
 
 #ifndef GPSTestPoints
-  gps.getGPRMC();
-  me.lat=gps.getLatitude();
-  me.lon=gps.getLongitude();
-  nowdt.time=gps.getTime();
-  nowdt.date=gps.getDate();
+  updateMeNowDT();
 #endif
 
 #ifdef GPSTestPoints
@@ -167,7 +166,7 @@ void loop() {
   }
 #endif
 
-  if(fence.distance(me, metransmitted) > 5){
+  if(fence.distance(me, metransmitted) > 2){
     metransmitted=me;
     SerialUSB.println("Sending Packet");
     lora.sendPosition(me, nowdt, alerts, shocks, fenceversion);
@@ -243,6 +242,37 @@ void loop() {
   // }
   // else SerialUSB.println("No Interrupt");
 
-  delay(1000);
+  //delay(1000);
+  smartDelay(1000);
 }
 
+
+static void smartDelay(unsigned long ms)
+{
+  unsigned long start = millis();
+  do 
+  {
+    while (GPSSerial.available())
+      gps.encode(GPSSerial.read());
+  } while (millis() - start < ms);
+}
+
+void updateMeNowDT(){
+  if (gps.location.isValid())
+  {
+    me.lat=gps.location.lat();
+    me.lon=gps.location.lng();
+  }
+  if (gps.date.isValid())
+  {
+    nowdt.date=gps.date.value();
+  }      
+  if (gps.time.isValid())
+  {
+    nowdt.time=gps.time.value()/100; //Divide by 100 to remove fractions of a second
+  } 
+}
+
+void standbyGPS(){
+        GPSSerial.println("$PMTK161,0*28"); //Send GPS to Standby (wake with any char)
+}

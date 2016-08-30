@@ -86,3 +86,8 @@ void init_mpu(){
 
 
 }
+
+void init_gps(){
+  GPSSerial.println("$PMTK220,1000*1F"); //Set update frequency to 1Hz (Period 1000ms)
+  GPSSerial.println("$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28"); //Print GPRMC and GPGGA only
+}
