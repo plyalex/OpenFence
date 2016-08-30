@@ -49,9 +49,7 @@ class LoRa_OF {
  
     public:
 
-    void initLoRa() {
-      // GPS Start
-      
+    void initLoRa() {      
       if (!manager.init()) 
       { 
         SerialUSB.println("Init failed"); 
