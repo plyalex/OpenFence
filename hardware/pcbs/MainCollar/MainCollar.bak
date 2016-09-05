@@ -380,7 +380,7 @@ U 1 1 5721A973
 P 12750 2350
 F 0 "P6" H 12750 2500 50  0000 C CNN
 F 1 "Battery" V 12850 2350 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Angled_1x03" H 12750 2350 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x03" H 12750 2350 50  0001 C CNN
 F 3 "" H 12750 2350 50  0000 C CNN
 	1    12750 2350
 	1    0    0    -1  
@@ -459,7 +459,7 @@ U 1 1 5722F7BE
 P 7500 2650
 F 0 "P4" H 7500 2800 50  0000 C CNN
 F 1 "Solar2" V 7600 2650 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Angled_1x02" H 7500 2650 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02" H 7500 2650 50  0001 C CNN
 F 3 "" H 7500 2650 50  0000 C CNN
 	1    7500 2650
 	-1   0    0    -1  
@@ -525,7 +525,7 @@ U 1 1 5722FC68
 P 7500 2150
 F 0 "P3" H 7500 2300 50  0000 C CNN
 F 1 "Solar1" V 7600 2150 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Angled_1x02" H 7500 2150 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02" H 7500 2150 50  0001 C CNN
 F 3 "" H 7500 2150 50  0000 C CNN
 	1    7500 2150
 	-1   0    0    -1  
@@ -963,7 +963,7 @@ U 1 1 5723936E
 P 15550 7050
 F 0 "P7" H 15550 7200 50  0000 C CNN
 F 1 "SPK_L" V 15650 7050 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Angled_1x02" H 15550 7050 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02" H 15550 7050 50  0001 C CNN
 F 3 "" H 15550 7050 50  0000 C CNN
 	1    15550 7050
 	1    0    0    1   
@@ -974,7 +974,7 @@ U 1 1 572393E6
 P 15550 6650
 F 0 "P8" H 15550 6800 50  0000 C CNN
 F 1 "SPK_R" V 15650 6650 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Angled_1x02" H 15550 6650 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02" H 15550 6650 50  0001 C CNN
 F 3 "" H 15550 6650 50  0000 C CNN
 	1    15550 6650
 	1    0    0    1   
@@ -2480,7 +2480,7 @@ U 1 1 572E9760
 P 6300 3150
 F 0 "P2" H 6300 3450 50  0000 C CNN
 F 1 "CONN_01X05" V 6400 3150 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Angled_1x05" H 6300 3150 50  0001 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x05" H 6300 3150 50  0001 C CNN
 F 3 "" H 6300 3150 50  0000 C CNN
 	1    6300 3150
 	1    0    0    1   

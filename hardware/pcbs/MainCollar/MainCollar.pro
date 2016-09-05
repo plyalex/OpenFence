@@ -1,6 +1,6 @@
-update=Sunday, 08 May 2016 11:32:49 am
+update=Monday, 05 September 2016 02:37:07 pm
 version=1
-last_client=kicad
+last_client=eeschema
 [pcbnew]
 version=1
 LastNetListRead=
@@ -70,3 +70,13 @@ LibName38=libraries/max5387
 LibName39=libraries/sma-edge
 LibName40=libraries/mounting_hole
 LibName41=/Users/alexjmuir/GitHub/RocketScreamKicadLibrary/RocketScreamKicadLibrary
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=Pcbnew
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
