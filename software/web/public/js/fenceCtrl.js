@@ -40,13 +40,20 @@ fenceCtrl.controller('fenceCtrl', function($scope, $http, $rootScope, geolocatio
     
     function updateList(data){
         var fencePoints = [];
-            $scope.fencePoints = data;
-            console.log($scope.fencePoints);
-            $scope.formData.point = $scope.fencePoints.length;
-            $scope.formData.version = $scope.fencePoints[0].version ;  //** Has console error if there is no entries in database
+        $scope.fencePoints = data;
+        console.log($scope.fencePoints);
+        $scope.formData.point = $scope.fencePoints.length;
+        if($scope.fencePoints.length == 0) $scope.formData.version = 0;
+        else $scope.formData.version = $scope.fencePoints[0].version ;  //** Has console error if there is no entries in database
         gservice.refresh($scope.formData.latitude, $scope.formData.longitude, false);
     };
     
+    $scope.updatelist = function() {
+        $.getJSON( '/fencepoints', function( data ) {
+            updateList(data);
+        });
+    };
+        
     // Get coordinates based on mouse click. When a click event is detected....
     $rootScope.$on("clicked", function(){
 
@@ -107,7 +114,27 @@ fenceCtrl.controller('fenceCtrl', function($scope, $http, $rootScope, geolocatio
     };
     
     $scope.send2Devices =function() {
+        var newversion = $scope.formData.version + 1;
+        if (newversion > 255) version = 0;
         
+        var versiondata = { version: newversion,
+                            paddock: $scope.formData.paddock};
+        $http.post('/fencepoints/update', versiondata)
+            .success(function (data) {
+
+                // Once complete, clear the form (except location)
+                updateList(data);
+            
+                // Refresh the map with new data
+                //gservice.refresh($scope.formData.latitude, $scope.formData.longitude);
+                
+            })
+            .error(function (data) {
+                //console.log('Error: ' + data);
+                //updateList();
+            });
+        
+         
     };
    
 });
