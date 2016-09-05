@@ -48,3 +48,5 @@ hardware/pcbs/MainCollar/MainCollarREV1.zip
 software/web/Untitled-1
 
 *.pyc
+
+.DS_Store
