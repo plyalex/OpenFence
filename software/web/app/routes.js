@@ -68,6 +68,27 @@ module.exports = function(app) {
         });
     });
     
+    app.post('/fencepoints/update', function(req, res){
+        var data = req.body;
+        var query = Fence;
+        query.update({paddock: data.paddock}, {
+            version: data.version, 
+            }, { multi: true }, 
+            function(err, numberAffected, rawResponse) {
+            //handle it
+        });
+
+        // Uses Mongoose schema to run the search (empty conditions)
+        var query = Fence.find({});
+        query.setOptions({sort: "order"});
+        query.exec(function(err, fencepoints){
+        if(err)
+            res.send(err);
+
+        // If no errors are found, it responds with a JSON of all users
+        res.json(fencepoints);
+        });
+    });
 //    // Retrieves JSON records for all users who meet a certain set of query conditions
 //    app.post('/query/', function(req, res){
 //
