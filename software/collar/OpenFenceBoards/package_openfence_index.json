@@ -16,7 +16,7 @@
           "architecture": "samd",
           "version": "1.0.0",
           "category": "Contributed",
-          "url": "file://Users/alexjmuir/GitHub/OpenFence/software/collar/OpenFenceBoards/OpenFence-1.0.0.zip",
+          "url": "https://github.com/plyalex/OpenFence/raw/master/software/collar/OpenFenceBoards/openfence_1.0.0.zip",
           "archiveFileName": "openfence_1.0.0.zip",
           "checksum": "MD5:20cc45aecc163b9f7057b7ac98cf1867",
           "size": "1270658",
