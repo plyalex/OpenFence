@@ -1,0 +1,58 @@
+{
+  "packages":
+  [
+    {
+      "name": "openfence",
+      "maintainer": "Alex Muir",
+      "websiteURL": "http://www.arduino.cc/en/Reference/HomePage",
+      "help":
+      {
+        "online": "http://www.arduino.cc/en/Reference/HomePage"
+      },
+      "platforms":
+      [
+        {
+          "name": "OpenFence Collar Boards",
+          "architecture": "samd",
+          "version": "1.0.0",
+          "category": "Contributed",
+          "url": "file://Users/alexjmuir/GitHub/OpenFence/software/collar/OpenFenceBoards/OpenFence-1.0.0.zip",
+          "archiveFileName": "openfence_1.0.0.zip",
+          "checksum": "MD5:20cc45aecc163b9f7057b7ac98cf1867",
+          "size": "1270658",
+          "boards": [
+                      {
+                        "name": "OpenFence Collar"
+                      }         
+                    ],
+          "toolsDependencies":
+          [
+            {
+              "packager": "arduino",
+              "name": "arm-none-eabi-gcc",
+              "version": "4.8.3-2014q1"
+            },
+            {
+              "packager": "arduino",
+              "name": "bossac",
+              "version": "1.6.1-arduino"
+            },
+            {
+              "packager": "arduino",
+              "name": "openocd",
+              "version": "0.9.0-arduino"
+            },
+            {
+              "packager": "arduino",
+              "name": "CMSIS",
+              "version": "4.0.0-atmel"
+            }
+          ]
+        }
+      ],
+      "tools":
+      [
+      ]
+    }
+  ]
+}
