@@ -18,8 +18,8 @@
           "category": "Contributed",
           "url": "https://github.com/plyalex/OpenFence/raw/master/software/collar/OpenFenceBoards/openfence_1.0.0.zip",
           "archiveFileName": "openfence_1.0.0.zip",
-          "checksum": "MD5:20cc45aecc163b9f7057b7ac98cf1867",
-          "size": "1270658",
+          "checksum": "SHA-256:4e8ae1177809a5387352cb5185fbea6788b434162bdc7c63c15a7b2bf3a54acb",
+          "size": "393595",
           "boards": [
                       {
                         "name": "OpenFence Collar"
