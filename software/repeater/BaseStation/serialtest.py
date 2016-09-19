@@ -38,17 +38,8 @@ def uploadPt2Mongo(data):
 	if (date==0):
 		return
 	animalinfo = animals.find_one({'RF_ID' : sender },{'_id':1})
-	print (flag)
-	print (sender)
-	print (lat)
-	print (lon)
-	print (time)
-	print (date)
-	print (alerts)
-	print (shocks)
 
 	New_Point = {	"animalid": animalinfo['_id'],
-					"paddock":0,
 					"location":[lon,lat],
 					"alerts":alerts,
 					"shocks":shocks,
@@ -61,37 +52,58 @@ def uploadPt2Mongo(data):
 def uploadFence2LoRa(data):
 	# Parse Data to variables
 	flag = 1
+	length = 20
 	index=0
 	lat = []
 	lon = []
 	for item in data:
+		print (item)
 		location=item['location']
 		lat.append(location[1])
 		lon.append(location[0])
 		version=item['version']
-		index=index+1
-	print(index)
 	index=len(lat)
 	print (index)
 	for i in range(0, index):
 		if (i%2 == 0): #Even
 			lat0=lat[i]
 			lon0=lon[i]
-			lat1=lat[i+1]
-			lon1=lon[i+1]
+			if (i+1 != index):
+				lat1=lat[i+1]
+				lon1=lon[i+1]
+			else:
+				lat1=0
+				lon1=0
+
 			print ("Sending Serial Data")
-			arduinoSerialData.write(struct.pack('<BBBBBffff',flag,2,i==index,index,i,lat0,lon0,lat1,lon1))
+			arduinoSerialData.write(struct.pack('<BBBBBBffff',flag,length,version,i==index,index,i,lat0,lon0,lat1,lon1))
 	print (data)
 	# arduinoSerialData.write(struct.pack('<BBBBBffff',flag,version,last,numPts,X,lat0,lon0,lat1,lon1))
 
+def uploadSettings2LoRa(data):
+	# Parse Data to variables
+	flag = 2
+	length = 11
 
+	for item in data:
+		RF_ID = item['RF_ID']
+		New_RF_ID = item['New_RF_ID']
+		distThresh = item['distthresh']
+		motionThresh = item['motionthresh']
+		magbias0 = item['magbias0']
+		magbias1 = item['magbias1']
+		magbias2 = item['magbias2']
+		testing =item['testing']
+		arduinoSerialData.write(struct.pack('<BBBBBBhhh?',flag,length,RF_ID,New_RF_ID,distThresh,motionThresh,magbias0,magbias1,magbias2,testing))
+		animals.find_one_and_update({'RF_ID': RF_ID},{'$set': {'RF_ID': New_RF_ID, 'updated': 0}})
+		print ("Sending Serial Data")
 
 # let it initialize
 time.sleep(2)
 
 
-starttime=time.time()
-fenceversion=1;
+starttime=0
+fenceversion=1
 
 while (1==1):
 	#Receive Packets
@@ -111,10 +123,19 @@ while (1==1):
 			fenceversion = serverfenceversion
 			print ("New version available: Downloading...")
 			fencedata = fencelocations.find({}).sort('order', pymongo.ASCENDING)
-			# uploadFence2LoRa(fencedata)
-			for item in fencedata:
-				print (item)
+			uploadFence2LoRa(fencedata)
+			print ("Sent to Arduino")
 			
+
+		print (animals.find_one({'updated':1},{'_id':0, 'updated':1}))
+		# updatesAvail = 0
+		# updatesAvail = animals.find_one({'updated':1},{'_id':0, 'updated':1})['updated']
+		if (animals.find_one({'updated':1},{'_id':0, 'updated':1}) is not None):
+			animaldata = animals.find({'updated':1})
+			uploadSettings2LoRa(animaldata)
+			print ("Updated Collar Settings")
+			
+		
 		starttime=time.time()
 
 
