@@ -13,14 +13,23 @@ var Schema      = mongoose.Schema;
 // Creates a User Schema. This will be the basis of how user data is stored in the db
 var AnimalSchema = new Schema({
     RF_ID: {type: Number, required: true},
+    New_RF_ID: {type: Number, required: true},
     name: {type: String, required: true},
     paddock: {type: Number, required: true},
     born: {type: Date, required: true},
     breed: {type: String, required: true}, 
     gender: {type: String, required: true},
-    comments: {type: String, required: true},
+    comments: {type: String, required: false},
+    colour: {type: String, required: true},
+    testing: {type: Boolean, required: true},
+    distthresh: {type: Number, required: true},
+    motionthresh: {type: Number, required: true},
+    magbias0: {type: Number, required: true},
+    magbias1: {type: Number, required: true},
+    magbias2: {type: Number, required: true},
     created_at: {type: Date, default: Date.now},
-    updated_at: {type: Date, default: Date.now}
+    updated_at: {type: Date, default: Date.now},
+    updated: {type: Number}
 });
 
 
@@ -32,6 +41,14 @@ AnimalSchema.pre('save', function(next){
     if(!this.created_at) {
         this.created_at = now
     }
+    next();
+});
+AnimalSchema.pre('update', function(next){
+    this.update({},{ 
+        $set: { updated_at: new Date(),
+                updated: 1
+              } 
+    });
     next();
 });
 

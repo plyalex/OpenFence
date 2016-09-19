@@ -2,6 +2,9 @@
 var mongoose    = require('mongoose');
 var Schema      = mongoose.Schema;
 
+var Animal            = require('./animal-model.js');
+
+
 
 //var AnimalPositionSchema = new Schema({
 //    location: {type: [Number], required: true}, // [Long, Lat]
@@ -12,7 +15,7 @@ var Schema      = mongoose.Schema;
 
 // Creates a User Schema. This will be the basis of how user data is stored in the db
 var AnimallocationSchema = new Schema({
-    animalid: {type: String, required: true},  //ObjectId???
+    animalid: {type: Schema.Types.ObjectId, ref: 'Animal', required: true},  //ObjectId??? [{ type: Schema.Types.ObjectId, ref: 'Category' }
     location: {type: [Number], required: true}, // [Long, Lat]
     alerts: {type: Number, required: true},
     shocks: {type: Number, required: true},

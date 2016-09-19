@@ -1,7 +1,7 @@
 // app.js
 
 // Declares the initial angular module "meanMapApp". Module grabs other controllers and services. Note the use of ngRoute.
-var app = angular.module('OpenFence', ['addCtrl', 'queryCtrl', 'fenceCtrl','trackingCtrl', 'geolocation', 'gservice', 'ngRoute'])
+var app = angular.module('OpenFence', ['addCtrl', 'queryCtrl', 'fenceCtrl','collarCtrl', 'trackingCtrl', 'geolocation', 'gservice', 'ngRoute'])
 
     // Configures Angular routing -- showing the relevant view and controller when needed.
     .config(function($routeProvider){
@@ -16,7 +16,7 @@ var app = angular.module('OpenFence', ['addCtrl', 'queryCtrl', 'fenceCtrl','trac
             templateUrl: 'partials/map.html',
             
         }).when('/collars', {
-            controller: 'queryCtrl',  //To Complete
+            controller: 'collarCtrl',  
             templateUrl: 'partials/collars.html',
 
         }).when('/tracking', {

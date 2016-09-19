@@ -32,7 +32,7 @@ module.exports = function(app) {
         var animalID        = req.body.animalID;
         //var animalID        = "ObjectId(\x22"+req.body.animalID+"\x22)";
         //"{\x22_id\x22:\x22"+id2Delete+"\x22}"
-        console.log(mongoose.types.ObjectId(animalID));
+        
         // Opens a generic Mongoose Query. Depending on the post body we will...
         var query = Animallocation.find({});
 
@@ -46,9 +46,8 @@ module.exports = function(app) {
             query = query.where('sent_at').lte(newestDate);
         }
 
-        // ...include filter for HTML5 Verified Locations
         if(animalID){   //& animalID != 0
-            query = query.where('animalid').equals(mongoose.types.ObjectId(animalID));
+            query = query.where('animalid').equals(animalID);
         }
         console.log(animalID);
         // Execute Query and Return the Query Results
