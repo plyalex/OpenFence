@@ -27,21 +27,21 @@ float Geofence::distance(struct position v, struct position w) {   //Equirectang
 
 
 //Step 2: Test if the point is within the polygon of points
-bool Geofence::pointInPolygon(struct position me, struct position fencePoint[], int polyCorners) {
+bool Geofence::pointInPolygon(struct position me, struct position fencePt[], int Corners) {
   //Based on http://alienryderflex.com/polygon/
   //oddNodes = 1 means within the polygon, oddNodes = 0 outside the polygon.
-  int   i, j=polyCorners-1 ;
+  int   i, j=Corners-1 ;
   bool  oddNodes=0;
   float temp=0;
   int sidebehind;
   struct position projection,projectionmax;
 
-  for(i=0; i<polyCorners; i++) {		
-    if(((fencePoint[i].lat< me.lat && fencePoint[j].lat>=me.lat) 
-      || (fencePoint[j].lat< me.lat && fencePoint[i].lat>=me.lat))  
-      &&  (fencePoint[i].lon<=me.lon || fencePoint[j].lon<=me.lon)) {
-      oddNodes^=(fencePoint[i].lon+(me.lat-fencePoint[i].lat) / 
-        (fencePoint[j].lat-fencePoint[i].lat)*(fencePoint[j].lon-fencePoint[i].lon)<me.lon); 
+  for(i=0; i<Corners; i++) {		
+    if(((fencePt[i].lat< me.lat && fencePt[j].lat>=me.lat) 
+      || (fencePt[j].lat< me.lat && fencePt[i].lat>=me.lat))  
+      &&  (fencePt[i].lon<=me.lon || fencePt[j].lon<=me.lon)) {
+      oddNodes^=(fencePt[i].lon+(me.lat-fencePt[i].lat) / 
+        (fencePt[j].lat-fencePt[i].lat)*(fencePt[j].lon-fencePt[i].lon)<me.lon); 
     }
     j=i; 
   }
@@ -139,8 +139,8 @@ float Geofence::bearing2fence(struct position me, struct position projection){
   return brng;
 }
 
-fenceProperty Geofence::geofence(struct position me, struct position fencePoint[], int polyCorners){
-  bool inside = pointInPolygon(me, fencePoint, polyCorners);
+fenceProperty Geofence::geofence(struct position me, struct position fencePt[], int Corners){
+  bool inside = pointInPolygon(me, fencePt, Corners);
 
   float temp=0;
   position projection, tempprojection;
@@ -148,14 +148,14 @@ fenceProperty Geofence::geofence(struct position me, struct position fencePoint[
   result.distance=0; result.sideOutside=0; result.bearing=0;
 
   if(!inside){
-    if( distBehind(me,fencePoint[polyCorners-1],fencePoint[0]) < 0) {
-      projection=findProjection(me, fencePoint[polyCorners-1],fencePoint[0]);
+    if( distBehind(me,fencePt[Corners-1],fencePt[0]) < 0) {
+      projection=findProjection(me, fencePt[Corners-1],fencePt[0]);
       result.distance=distance(me, projection);
       result.sideOutside=0;
     }
-    for(int i=1; i<polyCorners; i++){ 
-      if( distBehind(me,fencePoint[i-1],fencePoint[i]) < 0 ) {
-        tempprojection=findProjection(me, fencePoint[i-1],fencePoint[i]);
+    for(int i=1; i<Corners; i++){ 
+      if( distBehind(me,fencePt[i-1],fencePt[i]) < 0 ) {
+        tempprojection=findProjection(me, fencePt[i-1],fencePt[i]);
         temp=distance(me, tempprojection);
         if (temp > result.distance) {
           result.distance = temp; //if further away from side update the max distance behind

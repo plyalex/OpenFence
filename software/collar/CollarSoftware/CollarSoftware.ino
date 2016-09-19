@@ -12,6 +12,19 @@
 
 //#define WAITGPSFIX
 #define GPSTestPoints
+uint8_t NODE_ADDRESS = 11;
+uint8_t distThresh = 5;
+uint8_t motionThresh = 3;
+bool testing = false;
+int16_t magbias0 = 0;
+int16_t magbias1 = 0;
+int16_t magbias2 = 0;
+
+int polyCorners = 0;
+struct position fencePoints[255];
+uint8_t fenceversion = 0;
+
+int test=0;
 
 MCP73871 battery;
 RTCZero rtc;
@@ -25,15 +38,15 @@ Geofence fence;
 int distanceThresholds[]={0, 2, 4, 6, 8, 10}; //Distance in metres
 // magbias[]={-90,400,0}; //Float in MPU9250.h library
 
-int polyCorners = 0;
-position fencePoints[255];
-uint8_t fenceversion = 0;
+
 
 position me, metransmitted;
 datetime nowdt;
 int alerts = 0;
 int shocks = 0;
 
+void standbyMode();
+uint8_t threshhold = 0x04;
 
 
 void setup() {
@@ -55,6 +68,7 @@ void setup() {
   //   delay(100);
   // }
 
+
   fencePoints[0].lat=145.138458;  
   fencePoints[0].lon=-37.911625; 
   fencePoints[1].lat=145.138707;
@@ -67,6 +81,9 @@ void setup() {
 
   SerialUSB.println("Setup Complete");
 
+  audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); // Short Beep
+
+
   #ifdef WAITGPSFIX
   SerialUSB.print("Getting GPS Fix");
   bool gpsfix=0;
@@ -78,15 +95,11 @@ void setup() {
     SerialUSB.print(".");
   }
   SerialUSB.println("Fix Obtained");
-  audio.enableAmp();
-  audio.setvolumeBoth(20);
-  delay(500);
-  audio.disableAmp();
-  delay(500);
-  audio.enableAmp();
-  delay(500);
-  audio.disableAmp();
+  audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); //Beep Beep
+  delay(500); audio.enableAmp(); delay(500); audio.disableAmp();
   #endif
+
+  test = 0;
 }
 
 
@@ -96,7 +109,9 @@ int i=0;
 void loop() {
   //SerialUSB.println("Alive...");
   
-
+  if(testing){
+    audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); //Beep Beep
+  }
   //audioout();
 
   //battery.printStatus();
@@ -166,25 +181,35 @@ void loop() {
   }
 #endif
 
-  if(fence.distance(me, metransmitted) > 2){
+
+  SerialUSB.print(test); SerialUSB.print("\t");
+  SerialUSB.print(polyCorners); SerialUSB.print("\t");
+  SerialUSB.print(fenceversion); SerialUSB.print("\t");
+  SerialUSB.println(fencePoints[0].lat);
+
+
+  if(fence.distance(me, metransmitted) > distThresh){
     metransmitted=me;
     SerialUSB.println("Sending Packet");
     lora.sendPosition(me, nowdt, alerts, shocks, fenceversion);
   }
    
-  SerialUSB.println(polyCorners);
-  SerialUSB.println(fenceversion);
+
+  SerialUSB.print(test); SerialUSB.print("\t");
+  SerialUSB.print(polyCorners); SerialUSB.print("\t");
+  SerialUSB.print(fenceversion); SerialUSB.print("\t");
   SerialUSB.println(fencePoints[0].lat);
+
 
 
 
   fenceProperty result=fence.geofence(me, fencePoints, polyCorners);
   float compass = mpu9250.getHeading();
 
-  SerialUSB.println(compass);
-  SerialUSB.println(result.sideOutside);
-  SerialUSB.println(result.distance);
-  SerialUSB.println(result.bearing);
+  // SerialUSB.println(compass);
+  // SerialUSB.println(result.sideOutside);
+  // SerialUSB.println(result.distance);
+  // SerialUSB.println(result.bearing);
 
   static bool outside;
 
@@ -276,3 +301,65 @@ void updateMeNowDT(){
 void standbyGPS(){
         GPSSerial.println("$PMTK161,0*28"); //Send GPS to Standby (wake with any char)
 }
+
+void standby(){
+  standbyGPS();
+  delay(10000);
+  lora.sleep();
+  delay(10000);
+  audio.disableAmp();
+  delay(10000);
+  mpu9250.wakeOnmotion(motionThresh);
+  mpu9250.readStatus();
+  attachInterrupt(11, wake, HIGH);
+  USBDevice.detach();
+  
+  delay(10000);
+  standbyMode();
+  delay(10000);
+  
+}
+
+
+void standbyMode()
+{
+  
+
+  SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+  __DSB();
+  __WFI();
+  return;
+}
+
+void wake(){
+  mpu9250.readStatus();
+  return;
+}
+
+
+// void standbyMode(){
+//   // Entering standby mode when connected
+//   // via the native USB port causes issues.
+//   NVMCTRL->CTRLB.bit.SLEEPPRM = NVMCTRL_CTRLB_SLEEPPRM_DISABLED_Val;
+//   SCB->SCR |=  SCB_SCR_SLEEPDEEP_Msk;
+//   // Set the EIC (External Interrupt Controller) to wake up the MCU
+//   // on an external interrupt from digital pin 0. (It's EIC channel 11)
+//   EIC->WAKEUP.reg = EIC_WAKEUP_WAKEUPEN0;
+//   mpu9250.wakeOnmotion(threshhold);
+//   mpu9250.readStatus();
+//   attachInterrupt(11, wake, HIGH);
+//   __WFI();
+//   //Continues from here:
+//   // Try one of these: board_init(); SystemInit();
+//   //SerialUSB.println("Awake!");
+//   return;
+// }
+
+// void wake(){
+//   REG_EIC_INTFLAG = EIC_INTFLAG_EXTINT0;
+//   detachInterrupt(11);
+//     //SerialUSB.begin(115200);
+//     //SerialUSB.println("Interrupt!");
+//   mpu9250.readStatus();
+//   return;
+// }

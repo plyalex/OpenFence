@@ -6,15 +6,13 @@
 #include "Geofence.h"
 #include "PinDefines.h"
 
-#define MOBILE_NODE_ADDRESS 128 
 #define BASE_STATION_ADDRESS 1
 
-#define UpdateDistance 1 
 
 // Singleton instance of the radio driver 
 RH_RF95 radio(RF_CS, RF_INT); 
 // Class to manage message delivery and receipt, using the driver declared above 
-RHReliableDatagram manager(radio, MOBILE_NODE_ADDRESS); 
+RHReliableDatagram manager(radio, NODE_ADDRESS); 
 
 
 struct datapacket0{
@@ -36,6 +34,17 @@ struct datapacket1{
   float lon0;
   float lat1;
   float lon1;
+};
+
+struct datapacket2{ //Settings
+  bool updated;
+  uint8_t New_RF_ID;
+  uint8_t distThresh;
+  uint8_t motionThresh;
+  int16_t magbias0;
+  int16_t magbias1;
+  int16_t magbias2;
+  bool testing;
 };
 
 //Global Variables
@@ -60,6 +69,10 @@ class LoRa_OF {
       radio.setFrequency(915.0); 
       radio.setTxPower(10); 
 
+    }
+
+    bool sleep(){
+      return radio.sleep();
     }
 
     int sendPosition(struct position me, struct datetime now, uint16_t alerts, uint8_t shocks , uint8_t version) {
@@ -93,27 +106,23 @@ class LoRa_OF {
         uint8_t from; 
         uint8_t* bufPtr; 
 
-        extern int polyCorners;
-        extern position fencePoints[255];
-        extern uint8_t fenceversion;
         uint8_t last = 0, index = 0;
+
+        test=999;
+        SerialUSB.println("Sent");
         
         // Now wait for a reply from the base station 
         if (manager.recvfromAckTimeout(buf, &len, 2000, &from)) 
         { 
-          // SerialUSB.print("RX: "); 
-          // bufPtr = buf; 
-          // while(len-- > 0) 
-          // {
-          //   SerialUSB.write(*bufPtr++); 
-          // } 
-          // SerialUSB.println(); 
-          // delay(200); 
 
-            switch(radio.headerFlags()){
-            case 0: 
+            switch(radio.headerFlags())
+            {
+            case 0: //Location 
                     break;
-            case 1: while(1){
+            case 1: //Fence
+                    SerialUSB.println("Fence Packet");                   
+                    while(1){
+                      
                       memcpy(&fenceversion,             &buf[0],  1);  //Version //Dest, Orig, Bytes
                       memcpy(&last,                     &buf[1],  1); //Last Y/N
                       memcpy(&polyCorners,              &buf[2],  1); //numPts
@@ -122,21 +131,40 @@ class LoRa_OF {
                       memcpy(&fencePoints[index].lon,   &buf[8],  4);
                       memcpy(&fencePoints[index+1].lat, &buf[12], 4);
                       memcpy(&fencePoints[index+1].lon, &buf[16], 4);
+                      SerialUSB.print(".");
                       if(last) break;
                       if(manager.recvfromAckTimeout(buf, &len, 2000, &from)){
-                      SerialUSB.print(".");
+                        if(radio.headerFlags() != 1) break;
+                      
                       }else{
                         break;
                       }
                     }
+                    SerialUSB.println("Received Fence points"); 
                     break;
-                  }
+                  
+            case 2: //Settings
+                    SerialUSB.println("Settings Packet");                   
+                    memcpy(&NODE_ADDRESS,   &buffer[0],  1);   //Dest, Orig, Bytes
+                    memcpy(&distThresh,     &buffer[1],  1);
+                    memcpy(&motionThresh,   &buffer[2],  1);
+                    memcpy(&magbias0,       &buffer[3],  2);
+                    memcpy(&magbias1,       &buffer[5],  2);
+                    memcpy(&magbias2,       &buffer[7],  2);
+                    memcpy(&testing,        &buffer[9],  1);
+                    SerialUSB.print(NODE_ADDRESS);
+                    SerialUSB.println("Updated Settings"); 
+                    break;
+            }
         } 
         else 
         { 
           return 1; SerialUSB.println("Base station not responding!"); 
         } 
-      } else return 1; SerialUSB.println("sendtoWait failed");  
+      } else 
+      {
+        return 1; SerialUSB.println("sendtoWait failed");  
+      }
       return 0;
     }
 };

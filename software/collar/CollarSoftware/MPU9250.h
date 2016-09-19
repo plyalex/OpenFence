@@ -412,9 +412,9 @@ void getMagvalues(float * destination)
   readMagData(magCount);  // Read the x/y/z adc values   
   // Calculate the magnetometer values in milliGauss
   // Include factory calibration per data sheet and user environmental corrections
-  mx = (float)magCount[0]*mRes*magCalibration[0] - magbias[0];  // get actual magnetometer value, this depends on scale being set
-  my = (float)magCount[1]*mRes*magCalibration[1] - magbias[1];  
-  mz = (float)magCount[2]*mRes*magCalibration[2] - magbias[2]; 
+  mx = (float)magCount[0]*mRes*magCalibration[0] - (float)magbias0;  // get actual magnetometer value, this depends on scale being set
+  my = (float)magCount[1]*mRes*magCalibration[1] - (float)magbias1;  
+  mz = (float)magCount[2]*mRes*magCalibration[2] - (float)magbias2; 
   destination[0] = mx ; 
   destination[1] = my ;  
   destination[2] = mz ; 
@@ -1070,7 +1070,7 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
     }
 
     byte readStatus(){
-      SerialUSB.println(readByte(MPU9250_ADDRESS, INT_ENABLE),HEX);
+      //SerialUSB.println(readByte(MPU9250_ADDRESS, INT_ENABLE),HEX);
       return readByte(MPU9250_ADDRESS, INT_STATUS);
     }
   };

@@ -24,8 +24,8 @@ class Geofence
 	public:
 		Geofence(void);
 		float distance(struct position v, struct position w);
-		bool pointInPolygon(struct position me, struct position fencePoint[], int polyCorners);
-		fenceProperty geofence(struct position me, struct position fencePoint[], int polyCorners);
+		bool pointInPolygon(struct position me, struct position fencePt[], int Corners);
+		fenceProperty geofence(struct position me, struct position fencePt[], int Corners);
 
 	private:
 		float degrees2radians(float degrees);
