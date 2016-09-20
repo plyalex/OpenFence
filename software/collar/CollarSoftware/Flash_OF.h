@@ -51,17 +51,6 @@
 	                    memcpy(&magbias0,       &flashbuffer[5],  2);
 	                    memcpy(&magbias1,       &flashbuffer[7],  2);
 	                    memcpy(&magbias2,       &flashbuffer[9],  2);
-
-	                    SerialUSB.println(flashbuffer[0],BIN);
-	                    SerialUSB.println(flashbuffer[1],BIN);
-	                    SerialUSB.println(flashbuffer[2],BIN);
-	                    SerialUSB.println(flashbuffer[3],BIN);
-	                    SerialUSB.println(flashbuffer[4],BIN);
-	                    SerialUSB.println(flashbuffer[5],BIN);
-	                    SerialUSB.println(flashbuffer[6],BIN);
-	                    SerialUSB.println(flashbuffer[7],BIN);
-	                    SerialUSB.println(flashbuffer[8],BIN);
-	                    SerialUSB.println(flashbuffer[9],BIN);
 					}
     		} else {
     			SerialFlash.createErasable(file_settings, 10);

@@ -48,7 +48,7 @@ def uploadPt2Mongo(data):
 		animallocations.save(New_Point)
 		print ("Uploaded new Point to Server from: ", sender)
 	else:
-		newanimal = animals.insert_one({'RF_ID': sender, 'New_RF_ID': sender, 'Name':'New Collar'})
+		newanimal = animals.insert_one({'RF_ID': sender, 'New_RF_ID': sender, 'name':'New Collar'})
 		New_Point = {	"animalid": newanimal.inserted_id,
 					"location":[lon,lat],
 					"alerts":alerts,

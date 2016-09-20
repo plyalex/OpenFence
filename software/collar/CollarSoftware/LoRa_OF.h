@@ -63,12 +63,10 @@ class LoRa_OF {
       { 
         SerialUSB.println("Init failed"); 
       } 
-      manager.setThisAddress(NODE_ADDRESS);
       // ///< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range, 915 MHz, 10 dBm on RFM95W 
       radio.setModemConfig(RH_RF95::Bw500Cr45Sf128); 
       radio.setFrequency(915.0); 
       radio.setTxPower(10); 
-
     }
 
     bool sleep(){
@@ -177,7 +175,7 @@ class LoRa_OF {
                     memcpy(&magbias1,       &buf[7],  2);
                     memcpy(&magbias2,       &buf[9],  2);
                     
-                    radio.setThisAddress(NODE_ADDRESS);
+                    setAddress();
 
                     SerialFlashFile flashFile = SerialFlash.open(file_settings);
                     flashFile.erase();
@@ -200,6 +198,7 @@ class LoRa_OF {
     }
 
     void setAddress(){
+      radio.setHeaderFrom(NODE_ADDRESS);
       manager.setThisAddress(NODE_ADDRESS);
     }
 
