@@ -33,11 +33,8 @@
 	extern int16_t magbias1;
 	extern int16_t magbias2;
 
-	extern int polyCorners;
-    extern struct position fencePoints[255];
+	extern uint8_t polyCorners;
+    extern struct position fencePoints[256];
     extern uint8_t fenceversion;
-
-    extern int test;
-
 
 #endif

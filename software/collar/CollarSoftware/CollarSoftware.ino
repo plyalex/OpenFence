@@ -8,6 +8,7 @@
 #include <SPI.h>
 #include <RTCZero.h>
 #include <TinyGPS++.h>
+#include "Flash_OF.h"
 
 
 //#define WAITGPSFIX
@@ -20,8 +21,8 @@ int16_t magbias0 = 0;
 int16_t magbias1 = 0;
 int16_t magbias2 = 0;
 
-int polyCorners = 0;
-struct position fencePoints[255];
+uint8_t polyCorners = 0;
+struct position fencePoints[256];
 uint8_t fenceversion = 0;
 
 int test=0;
@@ -32,6 +33,7 @@ TinyGPSPlus gps;
 MPU9250 mpu9250;
 Audio_OF audio;
 LoRa_OF lora;
+Flash_OF flash;
 Geofence fence;
 
 //Global Variables - Updatable in Web Interface
@@ -57,8 +59,21 @@ void setup() {
   audio.initAudio();
   rtc.begin(); // initialize RTC
 
+  fencePoints[0].lon=145.138458;  
+  fencePoints[0].lat=-37.911625; 
+  fencePoints[1].lon=145.138707;
+  fencePoints[1].lat=-37.911662;
+  fencePoints[2].lon=145.138653;
+  fencePoints[2].lat=-37.911887;
+  fencePoints[3].lon=145.138399; 
+  fencePoints[3].lat=-37.911850;
+  polyCorners=4;
 
+  delay(1000);
   lora.initLoRa();
+  flash.init();  
+  lora.setAddress();
+
   init_mpu();
   //mpu9250.wakeOnmotion(0x02);
 
@@ -69,15 +84,7 @@ void setup() {
   // }
 
 
-  fencePoints[0].lat=145.138458;  
-  fencePoints[0].lon=-37.911625; 
-  fencePoints[1].lat=145.138707;
-  fencePoints[1].lon=-37.911662;
-  fencePoints[2].lat=145.138653;
-  fencePoints[2].lon=-37.911887;
-  fencePoints[3].lat=145.138399; 
-  fencePoints[3].lon=-37.911850;
-  polyCorners=4;
+
 
   SerialUSB.println("Setup Complete");
 
@@ -107,15 +114,9 @@ int dacValue = 0;
 int i=0;
 
 void loop() {
-  //SerialUSB.println("Alive...");
   
-  if(testing){
-    audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); //Beep Beep
-  }
-  //audioout();
 
   //battery.printStatus();
-  //gps.getGPRMC();
 
 
   // if(mpu9250.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01) {  // On interrupt, check if data ready interrupt
@@ -182,12 +183,6 @@ void loop() {
 #endif
 
 
-  SerialUSB.print(test); SerialUSB.print("\t");
-  SerialUSB.print(polyCorners); SerialUSB.print("\t");
-  SerialUSB.print(fenceversion); SerialUSB.print("\t");
-  SerialUSB.println(fencePoints[0].lat);
-
-
   if(fence.distance(me, metransmitted) > distThresh){
     metransmitted=me;
     SerialUSB.println("Sending Packet");
@@ -195,10 +190,13 @@ void loop() {
   }
    
 
-  SerialUSB.print(test); SerialUSB.print("\t");
+  SerialUSB.print(NODE_ADDRESS); SerialUSB.print("\t");
   SerialUSB.print(polyCorners); SerialUSB.print("\t");
   SerialUSB.print(fenceversion); SerialUSB.print("\t");
-  SerialUSB.println(fencePoints[0].lat);
+  SerialUSB.print(fencePoints[0].lat,6); SerialUSB.print("\t");
+  SerialUSB.print(fencePoints[1].lat,6); SerialUSB.print("\t");
+  SerialUSB.print(fencePoints[2].lat,6); SerialUSB.print("\t");
+  SerialUSB.println(fencePoints[3].lat,6);
 
 
 
@@ -252,8 +250,6 @@ void loop() {
 
       } 
     }
-
-
   }else{
     outside=0;
   }

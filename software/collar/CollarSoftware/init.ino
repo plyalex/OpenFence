@@ -8,7 +8,9 @@ void init_pins(){
   
   pinMode(AMP_EN,     OUTPUT);
   pinMode(RF_CS,      OUTPUT);
+  digitalWrite(RF_CS, LOW);
   pinMode(FLASH_CS,   OUTPUT);
+  digitalWrite(FLASH_CS, LOW);
   pinMode(AUX_0,      OUTPUT);
   pinMode(AUX_1,      OUTPUT);
   pinMode(AUX_2,      OUTPUT);
