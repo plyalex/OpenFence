@@ -38,15 +38,25 @@ def uploadPt2Mongo(data):
 	if (date==0):
 		return
 	animalinfo = animals.find_one({'RF_ID' : sender },{'_id':1})
-
-	New_Point = {	"animalid": animalinfo['_id'],
+	if (animalinfo):
+		New_Point = {	"animalid": animalinfo['_id'],
 					"location":[lon,lat],
 					"alerts":alerts,
 					"shocks":shocks,
 					"sent_at":datetime.datetime(2000+date%100, (date//100)%100, (date//10000), (time//10000), (time//100)%100, (time%100), 0)
-	}
-	animallocations.save(New_Point)
-	print ("Uploaded new Point to Server")
+		}
+		animallocations.save(New_Point)
+		print ("Uploaded new Point to Server from: ", sender)
+	else:
+		newanimal = animals.insert_one({'RF_ID': sender, 'New_RF_ID': sender, 'Name':'New Collar'})
+		New_Point = {	"animalid": newanimal.inserted_id,
+					"location":[lon,lat],
+					"alerts":alerts,
+					"shocks":shocks,
+					"sent_at":datetime.datetime(2000+date%100, (date//100)%100, (date//10000), (time//10000), (time//100)%100, (time%100), 0)
+		}
+		animallocations.insert_one(New_Point)
+
 
 
 def uploadFence2LoRa(data):
@@ -75,9 +85,8 @@ def uploadFence2LoRa(data):
 				lat1=0
 				lon1=0
 
-			print ("Sending Serial Data")
+			print ("Sending Fence Data")
 			arduinoSerialData.write(struct.pack('<BBBBBBffff',flag,length,version,i==index,index,i,lat0,lon0,lat1,lon1))
-	print (data)
 	# arduinoSerialData.write(struct.pack('<BBBBBffff',flag,version,last,numPts,X,lat0,lon0,lat1,lon1))
 
 def uploadSettings2LoRa(data):
@@ -86,6 +95,8 @@ def uploadSettings2LoRa(data):
 	length = 11
 
 	for item in data:
+		print ("New ID: ")
+		print(item['New_RF_ID'])
 		RF_ID = item['RF_ID']
 		New_RF_ID = item['New_RF_ID']
 		distThresh = item['distthresh']
@@ -94,7 +105,9 @@ def uploadSettings2LoRa(data):
 		magbias1 = item['magbias1']
 		magbias2 = item['magbias2']
 		testing =item['testing']
-		arduinoSerialData.write(struct.pack('<BBBBBBhhh?',flag,length,RF_ID,New_RF_ID,distThresh,motionThresh,magbias0,magbias1,magbias2,testing))
+		STRUCT=struct.pack('<BBBBBB?hhh',flag,length,RF_ID,New_RF_ID,distThresh,motionThresh,testing,magbias0,magbias1,magbias2) 
+		print (sys.getsizeof(STRUCT))
+		arduinoSerialData.write(struct.pack('<BBBBBB?hhh',flag,length,RF_ID,New_RF_ID,distThresh,motionThresh,testing,magbias0,magbias1,magbias2))
 		animals.find_one_and_update({'RF_ID': RF_ID},{'$set': {'RF_ID': New_RF_ID, 'updated': 0}})
 		print ("Sending Serial Data")
 

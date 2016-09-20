@@ -49,10 +49,11 @@ struct datapacket2{ //Settings
   uint8_t New_RF_ID;
   uint8_t distThresh;
   uint8_t motionThresh;
+  bool testing;
+  //uint8_t Padding will be added
   int16_t magbias0;
   int16_t magbias1;
   int16_t magbias2;
-  bool testing;
 };
 
 struct position{
@@ -66,7 +67,7 @@ uint8_t fenceversion;
 
 struct datapacket0 d0; //Received Location 
 struct datapacket1 d1[128]; //Fence Locations
-struct datapacket2 d2[255]; //Collar Settings
+struct datapacket2 d2[256]; //Collar Settings
 
 
 void setup() 
@@ -97,18 +98,18 @@ void setup()
   d1[0].last=0;
   d1[0].numPts=3;
   d1[0].X=0;
-  d1[0].lat0=101.101101;  
-  d1[0].lon0=-37.911625; 
-  d1[0].lat1=145.138707;
-  d1[0].lon1=-37.911662;
+  d1[0].lon0=101.101101;  
+  d1[0].lat0=-37.911625; 
+  d1[0].lon1=145.138707;
+  d1[0].lat1=-37.911662;
   d1[1].ver=1;
   d1[1].last=1;
   d1[1].numPts=3;
   d1[1].X=2;
-  d1[1].lat0=145.138653;
-  d1[1].lon0=-37.911887;
-  d1[1].lat1=0;
+  d1[1].lon0=145.138653;
+  d1[1].lat0=-37.911887;
   d1[1].lon1=0;
+  d1[1].lat1=0;
 }
 
 
@@ -153,10 +154,10 @@ void loop()
               memcpy(&d2[index].New_RF_ID,      &buffer[1],  1);   //Dest, Orig, Bytes
               memcpy(&d2[index].distThresh,     &buffer[2],  1);
               memcpy(&d2[index].motionThresh,   &buffer[3],  1);
-              memcpy(&d2[index].magbias0,       &buffer[4],  2);
-              memcpy(&d2[index].magbias1,       &buffer[6],  2);
-              memcpy(&d2[index].magbias2,       &buffer[8],  2);
-              memcpy(&d2[index].testing,        &buffer[10], 1);
+              memcpy(&d2[index].testing,        &buffer[4],  1);
+              memcpy(&d2[index].magbias0,       &buffer[5],  2);
+              memcpy(&d2[index].magbias1,       &buffer[7],  2);
+              memcpy(&d2[index].magbias2,       &buffer[9],  2);
               break;
 
     }
@@ -211,7 +212,7 @@ void loop()
         uint8_t bufferLoRa[size];
         radio.setHeaderFlags(0x1,0x0F);
 
-        for(int i=0; i<toSend; i++){
+        for(int i=0; i<=toSend; i++){
           memcpy(&bufferLoRa, &d1[i], size);   //Dest, Orig, Bytes
           if (!manager.sendtoWait(bufferLoRa, size, from));
         }
@@ -221,7 +222,7 @@ void loop()
         uint8_t size =sizeof(datapacket2)-sizeof(bool);
         uint8_t bufferLoRa[size];
         radio.setHeaderFlags(0x2,0x0F);
-        memcpy(&bufferLoRa, &d2[from]+1, size);   //Dest, Orig, Bytes
+        memcpy(&bufferLoRa, &d2[from].New_RF_ID, size);   //Dest, Orig, Bytes
         if (!manager.sendtoWait(bufferLoRa, size, from)){
         }else{
           d2[from].updated = 0;
