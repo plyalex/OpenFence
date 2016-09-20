@@ -5,6 +5,7 @@
 #include <RH_RF95.h>
 #include "Geofence.h"
 #include "PinDefines.h"
+#include "Flash_OF.h"
 
 #define BASE_STATION_ADDRESS 1
 
@@ -37,14 +38,13 @@ struct datapacket1{
 };
 
 struct datapacket2{ //Settings
-  bool updated;
   uint8_t New_RF_ID;
   uint8_t distThresh;
   uint8_t motionThresh;
+  bool testing;
   int16_t magbias0;
   int16_t magbias1;
   int16_t magbias2;
-  bool testing;
 };
 
 //Global Variables
@@ -63,7 +63,7 @@ class LoRa_OF {
       { 
         SerialUSB.println("Init failed"); 
       } 
-      
+      manager.setThisAddress(NODE_ADDRESS);
       // ///< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range, 915 MHz, 10 dBm on RFM95W 
       radio.setModemConfig(RH_RF95::Bw500Cr45Sf128); 
       radio.setFrequency(915.0); 
@@ -99,7 +99,7 @@ class LoRa_OF {
     }
 
     int  phoneHome(){
-      // Send message to base station 
+      // Send message to base station       
       if (manager.sendtoWait(buffer, sizeof(buffer), BASE_STATION_ADDRESS)) 
       { 
         uint8_t len = sizeof(buf); 
@@ -108,9 +108,7 @@ class LoRa_OF {
 
         uint8_t last = 0, index = 0;
 
-        test=999;
         SerialUSB.println("Sent");
-        
         // Now wait for a reply from the base station 
         if (manager.recvfromAckTimeout(buf, &len, 2000, &from)) 
         { 
@@ -131,28 +129,61 @@ class LoRa_OF {
                       memcpy(&fencePoints[index].lon,   &buf[8],  4);
                       memcpy(&fencePoints[index+1].lat, &buf[12], 4);
                       memcpy(&fencePoints[index+1].lon, &buf[16], 4);
-                      SerialUSB.print(".");
-                      if(last) break;
+                      SerialUSB.print("Lat0: ");
+                      SerialUSB.println(fencePoints[index].lat);
+                      SerialUSB.print("Lat1: ");
+                      SerialUSB.println(fencePoints[index+1].lat);
+                      if(last) {
+                        break;
+                      }
                       if(manager.recvfromAckTimeout(buf, &len, 2000, &from)){
-                        if(radio.headerFlags() != 1) break;
+                        if(radio.headerFlags() != 1) {
+                          SerialUSB.println("Message not a Fence");
+                          break;
+                          }
                       
                       }else{
+                        SerialUSB.println("No More Messages");
                         break;
                       }
                     }
+
+                    {
+                      SerialUSB.println("Copy to Flash");
+
+                      char flashbuffer[sizeof(fencePoints)+2];
+                      memcpy(&flashbuffer[0],   &polyCorners,     sizeof(polyCorners));
+                      memcpy(&flashbuffer[1],   &fenceversion,    sizeof(fenceversion));
+                      memcpy(&flashbuffer[2],   &fencePoints[0],  sizeof(fencePoints));
+                      SerialUSB.println(flashbuffer[0],BIN);
+                      SerialUSB.println(flashbuffer[1],BIN);
+                      SerialFlashFile flashFile = SerialFlash.open(file_fence);
+                      flashFile.erase();
+                      flashFile.write(flashbuffer, sizeof(flashbuffer));
+                      flashFile.close();
+                    } 
+
                     SerialUSB.println("Received Fence points"); 
                     break;
                   
             case 2: //Settings
                     SerialUSB.println("Settings Packet");                   
-                    memcpy(&NODE_ADDRESS,   &buffer[0],  1);   //Dest, Orig, Bytes
-                    memcpy(&distThresh,     &buffer[1],  1);
-                    memcpy(&motionThresh,   &buffer[2],  1);
-                    memcpy(&magbias0,       &buffer[3],  2);
-                    memcpy(&magbias1,       &buffer[5],  2);
-                    memcpy(&magbias2,       &buffer[7],  2);
-                    memcpy(&testing,        &buffer[9],  1);
-                    SerialUSB.print(NODE_ADDRESS);
+    
+                    memcpy(&NODE_ADDRESS,   &buf[0],  1);   //Dest, Orig, Bytes
+                    memcpy(&distThresh,     &buf[1],  1);
+                    memcpy(&motionThresh,   &buf[2],  1);
+                    memcpy(&testing,        &buf[3],  1);
+                    memcpy(&magbias0,       &buf[5],  2);
+                    memcpy(&magbias1,       &buf[7],  2);
+                    memcpy(&magbias2,       &buf[9],  2);
+                    
+                    radio.setThisAddress(NODE_ADDRESS);
+
+                    SerialFlashFile flashFile = SerialFlash.open(file_settings);
+                    flashFile.erase();
+                    flashFile.write(buf, len);
+                    flashFile.close();
+
                     SerialUSB.println("Updated Settings"); 
                     break;
             }
@@ -167,5 +198,10 @@ class LoRa_OF {
       }
       return 0;
     }
+
+    void setAddress(){
+      manager.setThisAddress(NODE_ADDRESS);
+    }
+
 };
 #endif
