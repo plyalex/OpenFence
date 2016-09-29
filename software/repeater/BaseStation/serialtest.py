@@ -64,6 +64,7 @@ def uploadFence2LoRa(data):
 	flag = 1
 	length = 20
 	index=0
+	last=0
 	lat = []
 	lon = []
 	for item in data:
@@ -84,9 +85,16 @@ def uploadFence2LoRa(data):
 			else:
 				lat1=0
 				lon1=0
+				last = 1;
 
 			print ("Sending Fence Data")
-			arduinoSerialData.write(struct.pack('<BBBBBBffff',flag,length,version,i==index,index,i,lat0,lon0,lat1,lon1))
+			if (index%2 == 0):
+				if (i==index-2):
+					last = 1;
+			else:
+				if (i==index):
+					last = 1
+			arduinoSerialData.write(struct.pack('<BBBBBBffff',flag,length,version,last,index,i,lat0,lon0,lat1,lon1))
 	# arduinoSerialData.write(struct.pack('<BBBBBffff',flag,version,last,numPts,X,lat0,lon0,lat1,lon1))
 
 def uploadSettings2LoRa(data):
