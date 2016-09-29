@@ -24,6 +24,7 @@
 	
 	#include "Geofence.h"
 
+	//Global Variables - Updatable in Web Interface
 	//Move this to retrieving from the flash memory
 	extern uint8_t NODE_ADDRESS;
 	extern uint8_t distThresh;

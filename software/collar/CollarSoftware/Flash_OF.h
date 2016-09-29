@@ -26,38 +26,60 @@
     			SerialFlashFile file;
     			SerialUSB.println("Fence File Exists");
 				file = SerialFlash.open(file_fence);
-					if (file) {  // true if the file exists
-						char flashbuffer[2 + sizeof(fencePoints)];
-						file.read(flashbuffer, sizeof(fencePoints));
-						memcpy(&polyCorners, 	&flashbuffer[0], 	sizeof(polyCorners));
-                        memcpy(&fenceversion, 	&flashbuffer[1],	sizeof(fenceversion));
-                        memcpy(&fencePoints, 	&flashbuffer[2], 	sizeof(fencePoints));
-                        SerialUSB.println("Fence Loaded from Flash");
-                    }
+				if (file) {  // true if the file exists
+					char flashbuffer[2 + sizeof(fencePoints)];
+					file.read(flashbuffer, sizeof(fencePoints));
+					memcpy(&polyCorners, 	&flashbuffer[0], 	sizeof(polyCorners));
+                    memcpy(&fenceversion, 	&flashbuffer[1],	sizeof(fenceversion));
+                    memcpy(&fencePoints, 	&flashbuffer[2], 	sizeof(fencePoints));
+                    SerialUSB.println("Fence Loaded from Flash");
+                }
     		} else {
     			SerialFlash.createErasable(file_fence, sizeof(fencePoints)+2);
+
+				char flashbuffer[2 + sizeof(fencePoints)];
+				memcpy(&flashbuffer[0], &polyCorners, 	sizeof(polyCorners));
+                memcpy(&flashbuffer[1],	&fenceversion, 	sizeof(fenceversion));
+                memcpy(&flashbuffer[2], &fencePoints, 	sizeof(fencePoints));
+
+    			SerialFlashFile flashFile = SerialFlash.open(file_fence);
+                flashFile.write(flashbuffer, sizeof(flashbuffer));
+                flashFile.close();
     		}
 
 			if(SerialFlash.exists(file_settings)){
     			SerialFlashFile file;
 				file = SerialFlash.open(file_settings);
-					if (file) {  // true if the file exists
-						char flashbuffer[10];
-						file.read(flashbuffer, sizeof(flashbuffer));
-	                    memcpy(&NODE_ADDRESS,   &flashbuffer[0],  1);   //Dest, Orig, Bytes
-	                    memcpy(&distThresh,     &flashbuffer[1],  1);
-	                    memcpy(&motionThresh,   &flashbuffer[2],  1);
-	                    memcpy(&testing,        &flashbuffer[3],  1);
-	                    memcpy(&magbias0,       &flashbuffer[5],  2);
-	                    memcpy(&magbias1,       &flashbuffer[7],  2);
-	                    memcpy(&magbias2,       &flashbuffer[9],  2);
-					}
+				if (file) {  // true if the file exists
+					char flashbuffer[10];
+					file.read(flashbuffer, sizeof(flashbuffer));
+                    memcpy(&NODE_ADDRESS,   &flashbuffer[0],  1);   //Dest, Orig, Bytes
+                    memcpy(&distThresh,     &flashbuffer[1],  1);
+                    memcpy(&motionThresh,   &flashbuffer[2],  1);
+                    memcpy(&testing,        &flashbuffer[3],  1);
+                    memcpy(&magbias0,       &flashbuffer[5],  2);
+                    memcpy(&magbias1,       &flashbuffer[7],  2);
+                    memcpy(&magbias2,       &flashbuffer[9],  2);
+                    SerialUSB.println(NODE_ADDRESS);
+  					SerialUSB.println(distThresh);
+
+				}
     		} else {
     			SerialFlash.createErasable(file_settings, 10);
+    			char buf[10];
+    			memcpy(&buf[0],	&NODE_ADDRESS, 	1);   //Dest, Orig, Bytes
+                memcpy(&buf[1], &distThresh,    1);
+                memcpy(&buf[2], &motionThresh,  1);
+                memcpy(&buf[3], &testing,    	1);
+                memcpy(&buf[5], &magbias0,  	2);
+                memcpy(&buf[7], &magbias1,    	2);
+                memcpy(&buf[9], &magbias2,  	2);
+
+                SerialFlashFile flashFile = SerialFlash.open(file_settings);
+                flashFile.write(buf, 10);
+                flashFile.close();
     		}
                     
-
-
 
     		while (SerialFlash.ready() == false) {
 			}

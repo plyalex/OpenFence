@@ -5,6 +5,9 @@
 
 // ***** CONSTANTS *****
 #define BASE_STATION_ADDRESS 1
+#define SerialMethod SerialUSB
+// #define SerialMethod Serial
+
 
 // ***** PIN DEFINITION *****
 // ***** MINI ULTRA PRO CONFIGURATIONS *****
@@ -79,12 +82,12 @@ void setup()
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
     
-  SerialUSB.begin(115200);
+  SerialMethod.begin(115200);
   digitalWrite(ledPin, HIGH);
   // If radio initialization fail
   if (!manager.init())
   {
-    SerialUSB.println("Init failed");
+    SerialMethod.println("Init failed");
   }
   digitalWrite(ledPin, LOW);
 
@@ -122,12 +125,12 @@ void loop()
   uint8_t index=0;
   uint8_t length=0;
 
-  if(SerialUSB.available()){
+  if(SerialMethod.available()){
 
-    flag = SerialUSB.read();
-    length = SerialUSB.read();
+    flag = SerialMethod.read();
+    length = SerialMethod.read();
     for(int j=0; j<length; j++){
-      buffer[j]=SerialUSB.read();
+      buffer[j]=SerialMethod.read();
     }
 
     switch(flag){
@@ -186,16 +189,16 @@ void loop()
                 memcpy(&d0.ver,      &buf[19], 1);
 
 
-                SerialUSB.write((uint8_t *)&flagfromNode,1);
-                SerialUSB.write((uint8_t *)&from,1);
-                SerialUSB.write((uint8_t *)&d0,20);
-                SerialUSB.println();
+                SerialMethod.write((uint8_t *)&flagfromNode,1);
+                SerialMethod.write((uint8_t *)&from,1);
+                SerialMethod.write((uint8_t *)&d0,20);
+                SerialMethod.println();
 
                 //Human Readable
-                // SerialUSB.print(from); SerialUSB.print(","); SerialUSB.print(radio.headerFlags());SerialUSB.print(",");
-                // SerialUSB.print(d0.lat,6); SerialUSB.print(d0.lon,6); SerialUSB.print(","); SerialUSB.print(d0.gpstime);
-                // SerialUSB.print(","); SerialUSB.print(d0.date); SerialUSB.print(","); SerialUSB.print(d0.alerts);
-                // SerialUSB.print(","); SerialUSB.print(d0.shocks); SerialUSB.print(","); SerialUSB.print(d0.ver);
+                // SerialMethod.print(from); SerialMethod.print(","); SerialMethod.print(radio.headerFlags());SerialMethod.print(",");
+                // SerialMethod.print(d0.lat,6); SerialMethod.print(d0.lon,6); SerialMethod.print(","); SerialMethod.print(d0.gpstime);
+                // SerialMethod.print(","); SerialMethod.print(d0.date); SerialMethod.print(","); SerialMethod.print(d0.alerts);
+                // SerialMethod.print(","); SerialMethod.print(d0.shocks); SerialMethod.print(","); SerialMethod.print(d0.ver);
                 break;
         case 1: //Fence packet
                 break;
@@ -208,11 +211,14 @@ void loop()
       // Send message to mobile node
       if(d0.ver != d1[0].ver){    //Not up to date with current fence, upload to node
         int toSend = (d1[0].numPts >> 1) ;
+        if(d1[0].numPts % 2 == 1){
+          toSend += 1;
+        }
         uint8_t size =sizeof(datapacket1);
         uint8_t bufferLoRa[size];
         radio.setHeaderFlags(0x1,0x0F);
 
-        for(int i=0; i<=toSend; i++){
+        for(int i=0; i<toSend; i++){
           memcpy(&bufferLoRa, &d1[i], size);   //Dest, Orig, Bytes
           if (!manager.sendtoWait(bufferLoRa, size, from));
         }

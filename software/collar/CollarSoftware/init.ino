@@ -80,11 +80,14 @@ void init_mpu(){
     SerialUSB.println("AK8963 mag biases (mG)"); SerialUSB.println(magbias[0]); SerialUSB.println(magbias[1]); SerialUSB.println(magbias[2]); 
     SerialUSB.println("AK8963 mag scale (mG)"); SerialUSB.println(magscale[0]); SerialUSB.println(magscale[1]); SerialUSB.println(magscale[2]); 
     delay(2000); // add delay to see results before serial spew of data
+    magbias0 = (int16_t)magbias[0];
+    magbias1 = (int16_t)magbias[1];
+    magbias2 = (int16_t)magbias[2];
   #endif
 
-  magbias[0] = +30;//-90;//+470.; // User environmental x-axis correction in milliGauss, should be automatically calculated
-  magbias[1] = +380;//+120.;      // User environmental y-axis correction in milliGauss
-  magbias[2] = -200;//+125.;        // User environmental z-axis correction in milliGauss
+  magbias[0] = -25;//-90;//+470.; // User environmental x-axis correction in milliGauss, should be automatically calculated
+  magbias[1] = +512;//+120.;      // User environmental y-axis correction in milliGauss
+  magbias[2] = -457;//+125.;        // User environmental z-axis correction in milliGauss
 
 
 }
