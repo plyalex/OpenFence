@@ -152,15 +152,15 @@ angular.module('gservice', [])
         // Initializes the map
         var oldZoom = 15;
         var initialize = function (latitude, longitude, filter) {
-
+            var map;
             // Uses the selected lat, long as starting point
             var myLatLng = new google.maps.LatLng(selectedLat, selectedLong);
-
-            var test = [], test1 = [];
+            var currentInfoWindow;
+            var fencepath = [], test1 = [];
             // If map has not been created...
             if (!map) {
                 // Create a new map and place in the index.html page
-                var map = new google.maps.Map(document.getElementById('map'), {
+                    map = new google.maps.Map(document.getElementById('map'), {
                     center: myLatLng,
                     zoom: oldZoom,
                     mapTypeId: 'satellite',
@@ -171,33 +171,32 @@ angular.module('gservice', [])
 
             google.maps.event.addListener(map, "zoom_changed", function () { oldZoom = map.getZoom(); });
             // Loop through each location in the array and place a marker
-            var val = 0, val1 = 0, marker;
+            var val = 0, val1 = 0;
             locations.forEach(function (n, i) {
+                var marker;
                 if (n.ANnotFE) {
-                    var icon = "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
-                    marker = new google.maps.Marker({
-                        position: n.latlon,
-                        map: map,
-                        title: "Big Map",
-                        icon: icon
-                    });
+
                     var circle = new google.maps.Circle({
                         strokeColor: n.colour,
                         strokeOpacity: 0.8,
                         strokeWeight: 2,
                         fillColor: n.colour,
-                        fillOpacity: 0.35,
+                        fillOpacity: 0.5,
                         map: map,
                         center: n.latlon,
-                        radius: n.radius
+                        radius: n.radius,
+                        position: n.latlon,
                     });
                     test1[val1] =  n.latlon;
                     val1 = val1 + 1;
                     // For each marker created, add a listener that checks for clicks
                     google.maps.event.addListener(circle, 'click', function (e) {
                         // When clicked, open the selected marker's message
-                        var currentSelectedMarker = n;
-                        n.message.open(map, circle);
+                        if (currentInfoWindow) {
+                            currentInfoWindow.message.close();
+                        }
+                        currentInfoWindow = n;
+                        currentInfoWindow.message.open(map, circle);
                     });
                 } else {
                     marker = new google.maps.Marker({
@@ -206,20 +205,25 @@ angular.module('gservice', [])
                         title: "Big Map",
                         label: n.order.toString()
                     });
-                    test[val] =  n.latlon;
+                    fencepath[val] =  n.latlon;
                     val = val + 1;
+                    
+                    // For each marker created, add a listener that checks for clicks
+                    google.maps.event.addListener(marker, 'click', function (e) {
+                        // When clicked, open the selected marker's message
+                        if (currentInfoWindow) {
+                            currentInfoWindow.message.close();
+                        }
+                        currentInfoWindow = n;
+                        currentInfoWindow.message.open(map, marker);
+                    });
                 }
 
-                // For each marker created, add a listener that checks for clicks
-                google.maps.event.addListener(marker, 'click', function (e) {
-                    // When clicked, open the selected marker's message
-                    var currentSelectedMarker = n;
-                    n.message.open(map, marker);
-                });
+                
             });
 
             var fenceExterior = new google.maps.Polygon({
-                paths: test,
+                paths: fencepath,
                 strokeColor: '#0000FF',
                 strokeOpacity: 0.8,
                 strokeWeight: 3,
@@ -227,15 +231,17 @@ angular.module('gservice', [])
                 fillOpacity: 0.1
             });
             fenceExterior.setMap(map);
-        //        var animalpath = new google.maps.Polyline({
-        //              paths: test1,
-        //              geodesic: true,
-        //              strokeColor: '#0000FF',
-        //              strokeOpacity: 1.0,
-        //              strokeWeight: 3,
-        //            });
-        //        animalpath.setMap(map);
-
+//            if(test1.length>1){
+//                var animalpath = new google.maps.Polyline({
+//                      paths: test1,
+////                      geodesic: true,
+//                      strokeColor: '#0000FF',
+//                      strokeOpacity: 1.0,
+//                      strokeWeight: 3,
+//                    });
+//                console.log("Should have drawn Lines");
+//                animalpath.setMap(map);
+//            }
             // Set initial location as a bouncing red marker
             var initialLocation = new google.maps.LatLng(latitude, longitude);
             marker = new google.maps.Marker({

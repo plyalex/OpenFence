@@ -62,9 +62,9 @@
                 </div>
                 <div class="form-group">
                     <label for="magbias">Magnetometer Calibration Biases (X, Y, Z):  </label>
-                    <input type="number"  id="magbias" placeholder="0" ng-model="formData.magbias0" required min="0" max="1000">
-                    <input type="number"  id="magbias" placeholder="0" ng-model="formData.magbias1" required min="0" max="1000">
-                    <input type="number"  id="magbias" placeholder="0" ng-model="formData.magbias2" required min="0" max="1000">
+                    <input type="number"  id="magbias" placeholder="0" ng-model="formData.magbias0" required min="-1000" max="1000">
+                    <input type="number"  id="magbias" placeholder="0" ng-model="formData.magbias1" required min="-1000" max="1000">
+                    <input type="number"  id="magbias" placeholder="0" ng-model="formData.magbias2" required min="-1000" max="1000">
                 </div>
                 <button type="submit" class="btn btn-danger btn-50p" ng-click="saveAs()" ng-disabled="collarForm.$invalid">Save As</button>
                 <button type="submit" class="btn btn-danger btn-50p" ng-click="update()" ng-disabled="collarForm.$invalid">Update</button>
