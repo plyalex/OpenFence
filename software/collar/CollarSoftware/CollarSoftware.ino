@@ -12,13 +12,13 @@
 
 
 #define GPSTestPoints
-uint8_t NODE_ADDRESS = 103;
-uint8_t distThresh = 5;
+uint8_t NODE_ADDRESS = 104;
+uint8_t distThresh = 2;
 uint8_t motionThresh = 3;
 bool testing = true;
-int16_t magbias0 = 0;
-int16_t magbias1 = 0;
-int16_t magbias2 = 0;
+int16_t magbias0 = -270;
+int16_t magbias1 = 168;
+int16_t magbias2 = -70;
 
 uint8_t polyCorners = 0;
 struct position fencePoints[256];
@@ -37,12 +37,13 @@ Geofence fence;
 // magbias[]={-90,400,0}; //Float in MPU9250.h library
 
 
-
 position me, metransmitted;
 datetime nowdt;
 int alerts = 0;
 int shocks = 0;
 int sleepCounter = 0;
+
+
 
 
 void setup() {
@@ -69,19 +70,25 @@ void setup() {
   lora.setAddress();
 
   init_mpu();
-  // magbias0=-25;
-  // magbias1=512;
-  // magbias2=-457;
 
-  //mpu9250.wakeOnmotion(0x02);
-  // SerialUSB.println(magbias0);
   // while(1){
   //   float compass = mpu9250.getHeading();
   //   SerialUSB.println(compass);
   //   delay(100);
   // }
+  mpu9250.wakeOnmotion(motionThresh);
+  mpu9250.readStatus();
+  attachInterrupt(11, wake, HIGH); //This breaks compass if not wakeOnMotion
+  USBDevice.detach();
 
-  //attachInterrupt(11, wake, HIGH); //This breaks compass if not wakeOnMotion
+
+  SerialUSB.print(NODE_ADDRESS); SerialUSB.print("\t");
+  SerialUSB.print(polyCorners); SerialUSB.print("\t");
+  SerialUSB.print(fenceversion); SerialUSB.print("\t");
+  SerialUSB.print(fencePoints[0].lat,6); SerialUSB.print("\t");
+  SerialUSB.print(fencePoints[1].lat,6); SerialUSB.print("\t");
+  SerialUSB.print(fencePoints[2].lat,6); SerialUSB.print("\t");
+  SerialUSB.println(fencePoints[3].lat,6);
 
   SerialUSB.println("Setup Complete");
   audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); // Short Beep
@@ -114,7 +121,6 @@ void loop() {
   battery.printStatus();
   //SerialUSB.println(battery.getStatus(),BIN);
   //SerialUSB.println(fencePoints[0].lat);
-
 
   if(!testing){
     updateMeNowDT();
@@ -157,20 +163,14 @@ void loop() {
 
   if(fence.distance(me, metransmitted) > distThresh){
     sleepCounter = 0; //Recent Movement
-    metransmitted=me;
     SerialUSB.println("Sending Packet");
-    lora.sendPosition(me, nowdt, alerts, shocks, fenceversion);
+    if(lora.sendPosition(me, nowdt, alerts, shocks, fenceversion)){
+      audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); //Beep Beep Failed to Send
+      delay(500); audio.enableAmp(); delay(500); audio.disableAmp();
+    } else {
+      metransmitted=me;
+    }
   }
-
-
-  // SerialUSB.print(NODE_ADDRESS); SerialUSB.print("\t");
-  // SerialUSB.print(polyCorners); SerialUSB.print("\t");
-  // SerialUSB.print(fenceversion); SerialUSB.print("\t");
-  // SerialUSB.print(fencePoints[0].lat,6); SerialUSB.print("\t");
-  // SerialUSB.print(fencePoints[1].lat,6); SerialUSB.print("\t");
-  // SerialUSB.print(fencePoints[2].lat,6); SerialUSB.print("\t");
-  // SerialUSB.println(fencePoints[3].lat,6);
-
 
 
 
@@ -178,6 +178,7 @@ void loop() {
 
   float compass = mpu9250.getHeading();
 
+  
   // SerialUSB.println(compass);
   // SerialUSB.println(result.sideOutside);
   // SerialUSB.println(result.distance);
@@ -193,7 +194,7 @@ void loop() {
     } 
     
     int val = compass-result.bearing;
-    int volume = 10;//result.distance * 100;
+    int volume = 5; //result.distance * 30; //10;
     if(volume>100) volume=100;
 
     if(val > 180) val=val-360;
@@ -230,13 +231,13 @@ void loop() {
 
   smartDelay(1000);
   
-  // sleepCounter++;
-  // if(sleepCounter > 1000 ){ // & !outside & !testing){
-  //   sleepCounter=0;
-  //   standby();
-  //   audio.initAudio();
-  //   audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); // Short Beep
-  // }
+  sleepCounter++;
+  if(sleepCounter > 30 ){ // & !outside & !testing){
+    sleepCounter=0;
+    //audio.enableAmp(); audio.setvolumeBoth(20); delay(1000); audio.disableAmp(); // Long Beep    
+    standby();
+    //audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); // Short Beep
+  }
 
 }
 
@@ -268,7 +269,8 @@ void updateMeNowDT(){
 }
 
 void standbyGPS(){
-        GPSSerial.println("$PMTK161,0*28"); //Send GPS to Standby (wake with any char)
+  GPSSerial.println("$PMTK161,0*28"); //Send GPS to Standby (wake with any char)
+  delay(100);  //Ensure the GPS Serial Message has time to complete before sleeping
 }
 
 void standbyMode()
@@ -289,13 +291,17 @@ void standby(){
   lora.sleep();
   audio.disableAmp();
   mpu9250.wakeOnmotion(motionThresh);
-  mpu9250.readStatus();
   attachInterrupt(11, wake, HIGH);
-  USBDevice.detach();
+
+  delay(100);
+  //mpu9250.readStatus();
+  //USBDevice.detach();
   
   standbyMode();
+
+  detachInterrupt(11);
   //USBDevice.attach();
-  
+  return;
 }
 
 
