@@ -5,34 +5,33 @@
 #include "PinDefines.h"
 #include <Wire.h>
 
-#define MAXADDR 0x2F 
-#define RegA    0x11
-#define RegB    0x12
-#define RegAB   0x13
+#define MAXADDR 0x2F  // Address of MAX5387 
+#define RegA    0x11  // Potentiometer wiper A
+#define RegB    0x12  // Potentiometer wiper B
+#define RegAB   0x13  // Both Potentiometer wipers move to the same location
 
+// Create a logarithmically scaling volume from the linear potentiometer
+// Each 10% increase in the volume requested doubles the output volume.
 static const uint8_t volumeLUT[100]={0,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,4,4,4,4,4,5,
                                   5,5,6,6,6,7,7,7,8,8,9,9,10,10,11,11,12,13,14,14,15,16,17,
                                   18,19,20,21,22,24,25,26,28,29,31,33,35,37,39,41,43,46,
                                   48,51,54,57,60,64,67,71,75,80,84,89,94,99,105,111,117,
                                   124,131,139,146,155,164,173,183,193,204,216,228,241,255};
 
-#define PWMPIN AUX_1
-#define TCCx TCC1
-#define TCCchannel 1
-
-#define TCx TC5
-#define TCx_Handler TC5_Handler
-#define TCx_IRQn TC5_IRQn
-#define TCchannel 0
-#define TCGCLK GCM_TC4_TC5
-
-#define syncTCC while (TCCx->SYNCBUSY.reg & TCC_SYNCBUSY_MASK)
-#define syncTC  while (TCx->COUNT16.STATUS.bit.SYNCBUSY)
 
 class Audio_OF {
  
     protected:
- 
+      void enable_pwm() {
+        REG_TCC1_CTRLA |= TCC_CTRLA_ENABLE;             // Enable the TCC0 output
+        while (TCC1->SYNCBUSY.bit.ENABLE);              // Wait for synchronization
+      }
+
+      void disable_pwm() {
+        REG_TCC1_CTRLA &= ~TCC_CTRLA_ENABLE;             // Enable the TCC0 output
+        while (TCC1->SYNCBUSY.bit.ENABLE);              // Wait for synchronization
+      }
+
     public:
       void initAudio(){
         digitalWrite(AMP_EN,LOW); //Turn off Amp
@@ -113,16 +112,6 @@ class Audio_OF {
         Wire.write(RegAB);
         Wire.write(volumeLUT[volume]);
         Wire.endTransmission();
-      }
-
-      void enable_pwm() {
-        REG_TCC1_CTRLA |= TCC_CTRLA_ENABLE;             // Enable the TCC0 output
-        while (TCC1->SYNCBUSY.bit.ENABLE);              // Wait for synchronization
-      }
-
-      void disable_pwm() {
-        REG_TCC1_CTRLA &= ~TCC_CTRLA_ENABLE;             // Enable the TCC0 output
-        while (TCC1->SYNCBUSY.bit.ENABLE);              // Wait for synchronization
       }
 
   };

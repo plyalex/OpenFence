@@ -1,5 +1,10 @@
 #ifndef PinDefines_h
 #define PinDefines_h
+	#include "Geofence.h"
+
+	//I2C Addresses: MPU 0x68, POT 0x2F
+	//GPS_TX, RX = Serial1
+	//Serial Monitor = SerialUSB
 
 	#define DAC_OUT     A0
 	#define AMP_EN      A2
@@ -7,7 +12,6 @@
 	#define AUX_1       8
 	#define AUX_2       A4
 	#define GPS_FIX     3
-	//define GPS_TX,    RX = Serial
 	#define FLASH_CS    ATN
 	#define RF_INT      2
 	#define RF_CS       5
@@ -17,15 +21,8 @@
 	#define CHARGE_PG   25 //PIN_LED_RXL
 
 	#define GPSSerial 	Serial1
-
-	//MPU 0x68, POT 0x2F
-	//GPS_TX, RX = Serial1
-	//Serial Monitor = SerialUSB
 	
-	#include "Geofence.h"
-
 	//Global Variables - Updatable in Web Interface
-	//Move this to retrieving from the flash memory
 	extern uint8_t NODE_ADDRESS;
 	extern uint8_t distThresh;
 	extern uint8_t motionThresh;

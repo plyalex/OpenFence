@@ -7,6 +7,12 @@
 
 
 // Based off https://github.com/kriswiner/MPU-9250/
+// The following functions were written by Alex Muir:
+// void wakeOnmotion(uint8_t threshold) - Set up the MPU9250 into Wake on Motion mode
+// byte readStatus()  - Read the interrupt status. Clears the interrupt.
+// float getHeading() - Takes the average of three magnetometer readings and returns the tilt corrected compass heading
+
+
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0, RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in 
 // above document; the MPU9250 and MPU9150 are virtually identical but the latter has a different register map
 //

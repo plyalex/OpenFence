@@ -21,7 +21,7 @@
 				  delay (1000);
 				}
 			}
-
+			// Check if the FENCE.bin file exists, Yes: Get fence from it, No: Make file and save defaults to it.
     		if(SerialFlash.exists(file_fence)){
     			SerialFlashFile file;
     			SerialUSB.println("Fence File Exists");
@@ -46,7 +46,7 @@
                 flashFile.write(flashbuffer, sizeof(flashbuffer));
                 flashFile.close();
     		}
-
+    		// Check if the SETTINGS.bin file exists, Yes: Get settings from it, No: Make file and save defaults to it.
 			if(SerialFlash.exists(file_settings)){
     			SerialFlashFile file;
 				file = SerialFlash.open(file_settings);
@@ -67,7 +67,7 @@
     		} else {
     			SerialFlash.createErasable(file_settings, 10);
     			char buf[10];
-    			memcpy(&buf[0],	&NODE_ADDRESS, 	1);   //Dest, Orig, Bytes
+    			memcpy(&buf[0],	&NODE_ADDRESS, 	1);  
                 memcpy(&buf[1], &distThresh,    1);
                 memcpy(&buf[2], &motionThresh,  1);
                 memcpy(&buf[3], &testing,    	1);
@@ -80,12 +80,10 @@
                 flashFile.close();
     		}
                     
-
+    		// Make sure the Flash has finished all steps before returning.
     		while (SerialFlash.ready() == false) {
 			}
     	}
-
     };
-
 
 #endif

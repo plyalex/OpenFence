@@ -48,8 +48,8 @@ struct datapacket2{ //Settings
 };
 
 //Global Variables
-uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];  // ???
-uint8_t buffer[sizeof(datapacket0)];
+uint8_t receiveBuffer[RH_RF95_MAX_MESSAGE_LEN]; 
+uint8_t transmitBuffer[sizeof(datapacket0)];
 
 
 class LoRa_OF {
@@ -84,93 +84,104 @@ class LoRa_OF {
       d.shocks=shocks;
       d.ver=version;
 
-      memcpy(buffer+0, &d.lat, 4);
-      memcpy(buffer+4, &d.lon, 4);
-      memcpy(buffer+8, &d.gpstime, 4);
-      memcpy(buffer+12, &d.date, 4);
-      memcpy(buffer+16, &d.alerts, 2);
-      memcpy(buffer+18, &d.shocks, 1);
-      memcpy(buffer+19, &d.ver, 1);
+      memcpy(transmitBuffer+0,  &d.lat,     4);
+      memcpy(transmitBuffer+4,  &d.lon,     4);
+      memcpy(transmitBuffer+8,  &d.gpstime, 4);
+      memcpy(transmitBuffer+12, &d.date,    4);
+      memcpy(transmitBuffer+16, &d.alerts,  2);
+      memcpy(transmitBuffer+18, &d.shocks,  1);
+      memcpy(transmitBuffer+19, &d.ver,     1);
       radio.setHeaderFlags(0x0,0x0F);
       return phoneHome();
 
     }
 
   int  phoneHome(){
-    // Send message to base station      
-     
-    if (manager.sendtoWait(buffer, sizeof(buffer), BASE_STATION_ADDRESS)) 
-    { 
-      uint8_t len = sizeof(buf); 
-      uint8_t from; 
-      uint8_t* bufPtr; 
+    // Send message to base station
+    int power = 5;
+    radio.setTxPower(power); 
 
-      uint8_t last = 0, index = 0;
+    //memcpy(transmitBuffer+16, &power, 2);
 
-      SerialUSB.println("Sent");
-      // Now wait for a reply from the base station 
-      while (manager.recvfromAckTimeout(buf, &len, 2000, &from)) 
+    while(1){ 
+      if (manager.sendtoWait(transmitBuffer, sizeof(transmitBuffer), BASE_STATION_ADDRESS)) 
       { 
+        uint8_t len = sizeof(receiveBuffer); 
+        uint8_t from; 
+        uint8_t* bufPtr; 
 
+        uint8_t last = 0, index = 0;
+
+        SerialUSB.println("Sent");
+        // Now wait for a reply from the base station 
+        while (manager.recvfromAckTimeout(receiveBuffer, &len, 2000, &from)) 
+        { 
           switch(radio.headerFlags())
           {
-          case 0: //Location 
-                  break;
-          case 1: //Fence
-                  SerialUSB.println("Fence Packet");                      
-                  memcpy(&fenceversion,             &buf[0],  1);  //Version //Dest, Orig, Bytes
-                  memcpy(&last,                     &buf[1],  1); //Last Y/N
-                  memcpy(&polyCorners,              &buf[2],  1); //numPts
-                  memcpy(&index,                    &buf[3],  1); 
-                  memcpy(&fencePoints[index].lat,   &buf[4],  4);
-                  memcpy(&fencePoints[index].lon,   &buf[8],  4);
-                  memcpy(&fencePoints[index+1].lat, &buf[12], 4);
-                  memcpy(&fencePoints[index+1].lon, &buf[16], 4);
-                  
-                  if(last) {
-                    SerialUSB.println("Copy to Flash");
+            case 0: //Location 
+              break;
+            case 1: //Fence
+              SerialUSB.println("Fence Packet");                      
+              memcpy(&fenceversion,             &receiveBuffer[0],  1);  //Version //Dest, Orig, Bytes
+              memcpy(&last,                     &receiveBuffer[1],  1); //Last Y/N
+              memcpy(&polyCorners,              &receiveBuffer[2],  1); //numPts
+              memcpy(&index,                    &receiveBuffer[3],  1); 
+              memcpy(&fencePoints[index].lat,   &receiveBuffer[4],  4);
+              memcpy(&fencePoints[index].lon,   &receiveBuffer[8],  4);
+              memcpy(&fencePoints[index+1].lat, &receiveBuffer[12], 4);
+              memcpy(&fencePoints[index+1].lon, &receiveBuffer[16], 4);
+                    
+              if(last) {
+                SerialUSB.println("Copy to Flash");
 
-                    char flashbuffer[sizeof(fencePoints)+2];
-                    memcpy(&flashbuffer[0],   &polyCorners,     sizeof(polyCorners));
-                    memcpy(&flashbuffer[1],   &fenceversion,    sizeof(fenceversion));
-                    memcpy(&flashbuffer[2],   &fencePoints[0],  sizeof(fencePoints));
-                    SerialUSB.println(flashbuffer[0],BIN);
-                    SerialUSB.println(flashbuffer[1],BIN);
-                    SerialFlashFile flashFile = SerialFlash.open(file_fence);
-                    flashFile.erase();
-                    flashFile.write(flashbuffer, sizeof(flashbuffer));
-                    flashFile.close();
-                  }
-                  break;
-                
-          case 2: //Settings
-                  SerialUSB.println("Settings Packet");                   
-  
-                  memcpy(&NODE_ADDRESS,   &buf[0],  1);   //Dest, Orig, Bytes
-                  memcpy(&distThresh,     &buf[1],  1);
-                  memcpy(&motionThresh,   &buf[2],  1);
-                  memcpy(&testing,        &buf[3],  1);
-                  memcpy(&magbias0,       &buf[5],  2);
-                  memcpy(&magbias1,       &buf[7],  2);
-                  memcpy(&magbias2,       &buf[9],  2);
+                char flashbuffer[sizeof(fencePoints)+2];
+                memcpy(&flashbuffer[0],   &polyCorners,     sizeof(polyCorners));
+                memcpy(&flashbuffer[1],   &fenceversion,    sizeof(fenceversion));
+                memcpy(&flashbuffer[2],   &fencePoints[0],  sizeof(fencePoints));
+                SerialUSB.println(flashbuffer[0],BIN);
+                SerialUSB.println(flashbuffer[1],BIN);
+                SerialFlashFile flashFile = SerialFlash.open(file_fence);
+                flashFile.erase();
+                flashFile.write(flashbuffer, sizeof(flashbuffer));
+                flashFile.close();
+              }
+              break;
                   
-                  setAddress();
-                  
-                  SerialFlashFile flashFile = SerialFlash.open(file_settings);
-                  flashFile.erase();
-                  flashFile.write(buf, len);
-                  flashFile.close();
+            case 2: //Settings
+              SerialUSB.println("Settings Packet");                   
 
-                  SerialUSB.println("Updated Settings"); 
-                  break;
+              memcpy(&NODE_ADDRESS,   &receiveBuffer[0],  1);   //Dest, Orig, Bytes
+              memcpy(&distThresh,     &receiveBuffer[1],  1);
+              memcpy(&motionThresh,   &receiveBuffer[2],  1);
+              memcpy(&testing,        &receiveBuffer[3],  1);
+              memcpy(&magbias0,       &receiveBuffer[5],  2);
+              memcpy(&magbias1,       &receiveBuffer[7],  2);
+              memcpy(&magbias2,       &receiveBuffer[9],  2);
+              
+              setAddress();
+              
+              SerialFlashFile flashFile = SerialFlash.open(file_settings);
+              flashFile.erase();
+              flashFile.write(receiveBuffer, len);
+              flashFile.close();
+
+              SerialUSB.println("Updated Settings"); 
+              break;
           }
-      } 
-      SerialUSB.println("No More Replies"); 
-    } else {
-      SerialUSB.println("sendtoWait failed");
-      return 1;  
+        } 
+        SerialUSB.println("No More Replies"); 
+        return 0;  //Sucess 
+      } else {
+        power = power+5;
+
+        //memcpy(transmitBuffer+16, &power, 2);
+
+        if(power > 25){
+          SerialUSB.println("sendtoWait failed");   
+          return 1; //Fail
+        } 
+      }
     }
-    return 0;
   }
 
   void setAddress(){
