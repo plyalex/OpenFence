@@ -11,3 +11,5 @@ Go to the [HackaDay.io Page](https://hackaday.io/project/10725-openfence-digital
 #[Collar Code](https://github.com/plyalex/OpenFence/tree/master/software/collar/CollarSoftware)
 Download and open with Arduino. Additional libraries required are: [TinyGPS++](https://github.com/mikalhart/TinyGPSPlus/releases) and RTCZero.
 
+#Licence
+All files: GNU GPL v3 
