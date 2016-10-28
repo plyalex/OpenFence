@@ -4,7 +4,7 @@
         <div class="left-pane">
             
             <h3 align="center">Select the Animal to Edit</h3>
-            <table class="table-devices" >
+            <table id="table-devices" >
                 <thead><tr><td width="33%"><b>ID</b></td><td width="33%"><b>Paddock</b></td><td width="34%"><b>RF ID</b></td></tr></thead>
                 <tbody>
                     <tr ng-repeat="device in deviceList" ng-class="{'selected':$index == selectedRow}" ng-click=view($index)><td>{{device.name}}</td><td>{{device.breed}}</td><td>{{device.RF_ID}}</td></tr>

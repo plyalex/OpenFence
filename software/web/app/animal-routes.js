@@ -12,7 +12,6 @@ module.exports = function(app) {
         // Uses Mongoose schema to run the search (empty conditions)
         var query =Animal.find({});
         query.setOptions({sort: "name"});
-        
         query.exec(function(err, animals){
             if(err)
                 res.send(err);
@@ -22,42 +21,42 @@ module.exports = function(app) {
         });
     });
     
-        // Retrieves JSON records for all users who meet a certain set of query conditions
-    app.post('/animals/list', function(req, res){
-
-        // Grab all of the query parameters from the body.
-        var oldestDate      = req.body.oldestDate;
-        var newestDate      = req.body.newestDate;
-        var animalID        = req.body.animalID;
-
-        // Opens a generic Mongoose Query. Depending on the post body we will...
-        var query = Animal.find({});
-
- 
-        if(oldestDate){
-            query = query.where('sent_at').gte(oldestDate);
-        }
-
-        // ...include filter by Max Age
-        if(newestDate){
-            query = query.where('sent_at').lte(newestDate);
-        }
-
-        // ...include filter for HTML5 Verified Locations
-        if(animalID){
-            query = query.where('animalID').equals(animalID);
-        }
-        console.log(animalID);
-        // Execute Query and Return the Query Results
-        query.exec(function(err, animals){
-            if(err)
-                res.send(err);
-
-            // If no errors, respond with a JSON of all users that meet the criteria
-            res.json(animals);
-        });
-    });
-    
+//        // Retrieves JSON records for all users who meet a certain set of query conditions
+//    app.post('/animals/list', function(req, res){
+//
+//        // Grab all of the query parameters from the body.
+//        var oldestDate      = req.body.oldestDate;
+//        var newestDate      = req.body.newestDate;
+//        var animalID        = req.body.animalID;
+//
+//        // Opens a generic Mongoose Query. Depending on the post body we will...
+//        var query = Animal.find({});
+//
+// 
+//        if(oldestDate){
+//            query = query.where('sent_at').gte(oldestDate);
+//        }
+//
+//        // ...include filter by Max Age
+//        if(newestDate){
+//            query = query.where('sent_at').lte(newestDate);
+//        }
+//
+//        // ...include filter for HTML5 Verified Locations
+//        if(animalID){
+//            query = query.where('animalID').equals(animalID);
+//        }
+//        console.log(animalID);
+//        // Execute Query and Return the Query Results
+//        query.exec(function(err, animals){
+//            if(err)
+//                res.send(err);
+//
+//            // If no errors, respond with a JSON of all users that meet the criteria
+//            res.json(animals);
+//        });
+//    });
+//    
     // Provides method for saving new points in the db
     app.post('/animals/add', function(req, res){
         console.log("Adding a new Animal")

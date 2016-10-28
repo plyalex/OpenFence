@@ -18,7 +18,7 @@
             <table class="table-points" >
                 <thead><tr><td width="45px">ID</td><td width="45px">Point</td><td>Lat</td><td>Lon</td><td width="70px"></td></tr></thead>
                 <tbody id="fenceList">
-                    <tr ng-repeat="fencePoint in fencePoints"><td>{{fencePoint.paddock}}</td><td>{{fencePoint.order}}</td><td>{{fencePoint.location[0]}}</td><td>{{fencePoint.location[1]}}</td><td><button type="submit" ng-click="deletePoint(fencePoint._id)" ng-disabled="addForm.$invalid">Delete</button></td></tr>
+                    <tr ng-repeat="fencePoint in fencePoints"><td>{{fencePoint.paddock}}</td><td>{{fencePoint.order}}</td><td>{{fencePoint.location[1]}}</td><td>{{fencePoint.location[0]}}</td><td><button type="submit" ng-click="deletePoint(fencePoint._id)" ng-disabled="addForm.$invalid">Delete</button></td></tr>
                 </tbody>
             </table>
 
@@ -46,7 +46,7 @@
                 </div>
                 <!-- Submit button. Note that its tied to createUser() function from addCtrl. Also note ng-disabled logic which prevents early submits.  -->
                 <button type="submit" class="btn btn-danger btn-block" ng-click="addPoint()" ng-disabled="addForm.$invalid">Add Point</button>
-                <button type="submit" class="btn btn-danger btn-block" ng-click="send2Devices()" ng-disabled="addForm.$invalid">Upload to Collars (TBI)</button>
+                <button type="submit" class="btn btn-danger btn-block" ng-click="send2Devices()" ng-disabled="addForm.$invalid">Upload to Collars</button>
             </form>
 
         </div>

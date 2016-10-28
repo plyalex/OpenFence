@@ -1,4 +1,4 @@
-var Animallocation            = require('./animallocation-model.js');
+var Animallocation = require('./animallocation-model.js');
 var mongoose    = require('mongoose');
 
 
@@ -13,13 +13,15 @@ module.exports = function(app) {
 
         // Uses Mongoose schema to run the search (empty conditions)
         var query =Animallocation.find({});
-        query.setOptions({sort: "animal"});
+        query.sort({'sent_at': -1});
+        query.limit(100);
+        console.log('Getting Animal Locations');
         query.exec(function(err, animals){
             if(err)
                 res.send(err);
-
             // If no errors are found, it responds with a JSON of all users
             res.json(animals);
+            
         });
     });
     
@@ -35,7 +37,9 @@ module.exports = function(app) {
         
         // Opens a generic Mongoose Query. Depending on the post body we will...
         var query = Animallocation.find({});
-
+        query.sort({'sent_at': -1});
+        query.limit(100);
+        
  
         if(oldestDate){
             query = query.where('sent_at').gte(oldestDate);

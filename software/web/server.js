@@ -12,7 +12,7 @@ var app             = express();
 // Express Configuration
 // -----------------------------------------------------
 // Sets the connection to MongoDB
-//mongoose.connect("mongodb://localhost/OpenFence");
+//mongoose.connect("mongodb://localhost/OpenFencev2");
 mongoose.connect('mongodb://openfence1:$9GF7bz!qC$t@ds145385.mlab.com:45385/openfence');
 
 // Logging and Parsing

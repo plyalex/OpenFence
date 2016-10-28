@@ -8,8 +8,8 @@ fenceCtrl.controller('fenceCtrl', function($scope, $http, $rootScope, geolocatio
     $scope.formData.paddock = 0;
     $scope.formData.point = 10;
     $scope.formData.version = 0;
-    $scope.formData.latitude = -27.000000;
-    $scope.formData.longitude = 133.000000;
+    $scope.formData.latitude = -37.911751;
+    $scope.formData.longitude = 145.138537;
     
     
     // Get User's actual coordinates based on HTML5 at window load

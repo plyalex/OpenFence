@@ -28,6 +28,8 @@
     width: 30%;
     float: right;
     padding: 0px 0px 0px 0px;
+    overflow-y: scroll;
+
 } 
 
 /*#collarForm*/
@@ -56,9 +58,8 @@
     width: 70%;
     float: right;
     padding: 15px;
-    overflow: auto;
     padding: 0px 15px 0px 15px;
-
+    overflow-y: scroll;
 } 
 
 .main-content #collar .right-pane #collarForm{
@@ -70,8 +71,8 @@
 */
     overflow-y: scroll;
     max-height: 85vh;
-    border-style: solid;
-    border-width: 1px;
+/*    //border-style: solid;*/
+/*    //border-width: 1px;*/
 
 } 
 
@@ -113,19 +114,30 @@
 }
 
 
-.table-devices{
+#table-devices{
     table-layout : fixed;
     width: 100%;
 /*    border-collapse: collapse;*/
-    border: 1px solid black;
+    border: 0px solid black;
 }
 
-.table-devices th, td{
-    border: 0px solid black;
+#table-devices thead{
+    border-bottom: 1px solid black;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
     text-align: center;
     padding-left: 5px;
     padding-right: 5px;
 }
+
+#table-devices th, td{
+    border: 0px;
+    text-align: center;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
 
 .selected {
     background-color:#eeeeee;

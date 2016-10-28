@@ -6,46 +6,50 @@ trackingCtrl.controller('trackingCtrl', function ($scope, $http, $rootScope, geo
     $scope.formData = {};
     // Set initial coordinates to the center of the US
     $scope.formData.paddock = 0;
-    $scope.formData.point = 10;
+    $scope.formData.point = 0;
     $scope.formData.version = 0;
-    $scope.formData.latitude = -27.000000;
-    $scope.formData.longitude = 133.000000;
-    
-    
-    // Get User's actual coordinates based on HTML5 at window load
-    geolocation.getLocation().then(function (data) {
-        // Set the latitude and longitude equal to the HTML5 coordinates
-        var coords = {lat: data.coords.latitude, long: data.coords.longitude};
+    $scope.formData.latitude = -37.911751;
+    $scope.formData.longitude = 145.138537;
+    $scope.animals = [];
 
-        // Display coordinates in location textboxes rounded to three decimal points
-        $scope.formData.longitude = parseFloat(coords.long).toFixed(6);
-        $scope.formData.latitude = parseFloat(coords.lat).toFixed(6);
-        // Set the latitude and longitude equal to the HTML5 coordinates
+    $(document).ready(function() {
+        // Get User's actual coordinates based on HTML5 at window load
+        geolocation.getLocation().then(function (data) {
+            // Set the latitude and longitude equal to the HTML5 coordinates
+            var coords = {lat: data.coords.latitude, long: data.coords.longitude};
+
+            // Display coordinates in location textboxes rounded to three decimal points
+            $scope.formData.longitude = parseFloat(coords.long).toFixed(6);
+            $scope.formData.latitude = parseFloat(coords.lat).toFixed(6);
+            // Set the latitude and longitude equal to the HTML5 coordinates
+            $.getJSON('/tracking/list', function (data) {
+                gservice.refreshAnimals($scope.formData.latitude, $scope.formData.longitude, data);
+            });
+        });
+
+
         $.getJSON('/tracking/list', function (data) {
             gservice.refreshAnimals($scope.formData.latitude, $scope.formData.longitude, data);
         });
-    });
-    
-    
-    $.getJSON('/tracking/list', function (data) {
-        gservice.refreshAnimals($scope.formData.latitude, $scope.formData.longitude, data);
-    });
-        
-    var now = new Date();
-    now.setMilliseconds(0);
-    now.setSeconds(0);
-    $scope.formData.newestDate = now;
-    //now.setMonth(now.getMonth()-1);
-    //$scope.formData.oldestDate = now;
-    $scope.animals = [];
-    $scope.animals[0] = {name: "All", id: null};
-    $.getJSON('/animals/list', function (data) {
-        data.forEach(function (n, i) {
-            $scope.animals[i + 1] = {name: n.name, id: n._id};
+
+        var now = new Date();
+        now.setMilliseconds(0);
+        now.setSeconds(0);
+        $scope.formData.newestDate = now;
+        //now.setMonth(now.getMonth()-1);
+        $scope.formData.oldestDate = now;
+        $scope.animals[0] = {name: "All", id: null};
+        $.getJSON('/animals/list', function (data) {
+            Array.from(data).forEach(function (n, i) {
+            //data.forEach(function (n, i) {
+
+                $scope.animals[i + 1] = {name: n.name, id: n._id};
+            });
         });
+        $scope.selectedAnimal = $scope.animals[0];
+        console.log($scope.animals);
+        
     });
-    $scope.selectedAnimal = $scope.animals[0];
-    
     
     // Functions
     // ----------------------------------------------------------------------------
@@ -91,7 +95,6 @@ trackingCtrl.controller('trackingCtrl', function ($scope, $http, $rootScope, geo
             
             // Store the filtered results in queryResults
             .success(function (queryResults) {
-                console.log(queryResults);
                 // Pass the filtered results to the Google Map Service and refresh the map
                 gservice.refreshAnimals($scope.formData.latitude, $scope.formData.longitude, queryResults);
 
@@ -103,8 +106,5 @@ trackingCtrl.controller('trackingCtrl', function ($scope, $http, $rootScope, geo
             });
     };
     
-    $scope.send2Devices = function () {
-        
-    };
    
 });

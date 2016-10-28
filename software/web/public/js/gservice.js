@@ -14,10 +14,9 @@ angular.module('gservice', [])
         // Array of locations obtained from API calls
         var locations = [];
 
-
-        // Selected Location (initialize to center of Australia)
-        var selectedLat = -27;
-        var selectedLong = 133;
+        // Selected Location (initialize to center of Monash Oval)
+        var selectedLat = -37.911751;
+        var selectedLong = 145.138537;
     
         // Handling Clicks and location selection
         googleMapService.clickLat  = 0;
@@ -80,6 +79,8 @@ angular.module('gservice', [])
                     '<p><b>Paddock</b>: ' + animals[index].paddock +
                     '<br><b>Name</b>: ' + animals[index].name +
                     '<br><b>Sent</b>: ' + animalpoint.sent_at +
+                    '<br><b>Location</b>: ' + animalpoint.location[1] + ', ' + animalpoint.location[0] +
+                    '<br><b>Alerts, Shocks</b>: ' + animalpoint.alerts + ', ' + animalpoint.shocks +
                     '</p>';
                 
                 // Converts each of the JSON records into Google Maps Location format (Note [Lat, Lng] format).
@@ -150,7 +151,7 @@ angular.module('gservice', [])
 
             
         // Initializes the map
-        var oldZoom = 15;
+        var oldZoom = 17;
         var initialize = function (latitude, longitude, filter) {
             var map;
             // Uses the selected lat, long as starting point

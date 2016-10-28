@@ -22,33 +22,6 @@
                 </tbody>
             </table>
 
-            <form id="addPoint" ng-hide="true" >
-                <h3 text-align="right">Insert New Point</h3>
-                <div class="form-group">
-                <label for="paddock">Paddock (between 0 and 5):</label>
-                    <input type="number" class="form-control" name="paddock" ng-model="formData.paddock" min="0" max="5">
-                </div>
-                <div class="form-group">
-                <label for="point">Point (between 0 and 255):</label>
-                    <input type="number" class="form-control" name="point" ng-model="formData.point" min="0" max="255">
-                </div>
-                <div class="form-group">
-                <label for="point">Version:</label>
-                    <input type="number" class="form-control" name="version" ng-model="formData.version" min="0" max="255" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="latitude">Latitude</label>
-                    <input type="text" class="form-control" id="latitude" value="39.500" ng-model="formData.latitude" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="longitude">Longitude</label>
-                    <input type="text" class="form-control" id="longitude" value="-98.350" ng-model="formData.longitude" readonly>
-                </div>
-                <!-- Submit button. Note that its tied to createUser() function from addCtrl. Also note ng-disabled logic which prevents early submits.  -->
-                <button type="submit" class="btn btn-danger btn-block" ng-click="addPoint()" ng-disabled="addForm.$invalid">Add Point</button>
-                <button type="submit" class="btn btn-danger btn-block" ng-click="send2Devices()" ng-disabled="addForm.$invalid">Upload to Collars (TBI)</button>
-                <button type="submit" class="btn btn-danger btn-block" ng-click="refresh()" ng-disabled="addForm.$invalid">Refresh</button>
-            </form>
 
             <form>
                 <div class="form-group">
