@@ -48,3 +48,5 @@ software/web/Untitled-1
 *.pyc
 
 .DS_Store
+
+software/examples/GFT
