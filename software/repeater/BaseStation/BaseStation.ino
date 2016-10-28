@@ -6,7 +6,7 @@
 // ***** CONSTANTS *****
 #define BASE_STATION_ADDRESS 1
 #define SerialMethod SerialUSB
-// #define SerialMethod Serial
+//#define SerialMethod Serial1
 
 
 // ***** PIN DEFINITION *****
@@ -82,19 +82,22 @@ void setup()
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
     
-  SerialMethod.begin(115200);
+  SerialMethod.begin(57600);
   digitalWrite(ledPin, HIGH);
   // If radio initialization fail
   if (!manager.init())
   {
     SerialMethod.println("Init failed");
   }
+  else SerialMethod.println("Init Success");
+
   digitalWrite(ledPin, LOW);
+
 
   // FSK, Rb = 2.4 kbps, Fd = 4.8 kHz 915 MHz, 20 dBm on RFM69HCW
   radio.setModemConfig(RH_RF95::Bw500Cr45Sf128 );
   radio.setFrequency(915.0);
-  radio.setTxPower(10);
+  radio.setTxPower(5);
 
 
   d1[0].ver=1;
@@ -129,6 +132,8 @@ void loop()
 
     flag = SerialMethod.read();
     length = SerialMethod.read();
+    if(length > 20) length = 20;
+
     for(int j=0; j<length; j++){
       buffer[j]=SerialMethod.read();
     }
@@ -173,7 +178,7 @@ void loop()
     uint8_t len = sizeof(buf);
     uint8_t from;
     uint8_t* bufPtr;
-    
+    digitalWrite(ledPin, HIGH);  
     // Now wait for a reply from the mobile node
     if (manager.recvfromAck(buf, &len, &from))
     {
@@ -194,20 +199,38 @@ void loop()
                 SerialMethod.write((uint8_t *)&d0,20);
                 SerialMethod.println();
 
-                //Human Readable
+          //Human Readable
                 // SerialMethod.print(from); SerialMethod.print(","); SerialMethod.print(radio.headerFlags());SerialMethod.print(",");
                 // SerialMethod.print(d0.lat,6); SerialMethod.print(d0.lon,6); SerialMethod.print(","); SerialMethod.print(d0.gpstime);
                 // SerialMethod.print(","); SerialMethod.print(d0.date); SerialMethod.print(","); SerialMethod.print(d0.alerts);
                 // SerialMethod.print(","); SerialMethod.print(d0.shocks); SerialMethod.print(","); SerialMethod.print(d0.ver);
+                
+                // SerialMethod.print(from); SerialMethod.print(","); SerialMethod.print(radio.lastRssi()); SerialMethod.print(",");
+                // SerialMethod.print(d0.shocks); SerialMethod.print(","); SerialMethod.print(d0.lat,6); SerialMethod.print(","); 
+                // SerialMethod.print(d0.lon,6); SerialMethod.println();
+
                 break;
         case 1: //Fence packet
                 break;
         case 2: //Settings Packet
                 break;
+        case 3: //Bias Packet
+                int16_t magbias0,magbias1,magbias2;
+                memcpy(&magbias0,  &buf[0],  2);   //Dest, Orig, Bytes
+                memcpy(&magbias1,  &buf[2],  2);
+                memcpy(&magbias2,  &buf[4],  2);
+
+                SerialMethod.write((uint8_t *)&flagfromNode,1);
+                SerialMethod.write((uint8_t *)&from,1);
+                SerialMethod.write((uint8_t *)&buf,6);
+                SerialMethod.println();
+
+                // SerialMethod.print(from); SerialMethod.print(","); SerialMethod.print(radio.headerFlags());SerialMethod.print(",");
+                // SerialMethod.print(magbias0); SerialMethod.print(","); SerialMethod.print(magbias1);
+                // SerialMethod.print(","); SerialMethod.println(magbias2);
+                break;
       }
 
-      digitalWrite(ledPin, HIGH);  
-      
       // Send message to mobile node
       if(d0.ver != d1[0].ver){    //Not up to date with current fence, upload to node
         int toSend = (d1[0].numPts >> 1) ;
@@ -223,7 +246,7 @@ void loop()
           if (!manager.sendtoWait(bufferLoRa, size, from));
         }
       }
-
+      
       if(d2[from].updated){    //Settings for that node have been updated, upload to node
         uint8_t size =sizeof(datapacket2)-sizeof(bool);
         uint8_t bufferLoRa[size];
@@ -237,11 +260,8 @@ void loop()
             memcpy(&d2[New_RF_ID], &d2[from], sizeof(datapacket2));   //Dest, Orig, Bytes
           }
         }
-
-
       }
       digitalWrite(ledPin, LOW);
-      
     }
   }
 }
