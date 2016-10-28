@@ -5,6 +5,10 @@
 #include "PinDefines.h"
 #include <Wire.h>
 
+#include "Audio_OF.h"
+extern Audio_OF audio;
+
+
 
 // Based off https://github.com/kriswiner/MPU-9250/
 // The following functions were written by Alex Muir:
@@ -468,10 +472,17 @@ void magcalMPU9250(float * dest1, float * dest2)
   int16_t mag_max[3] = {0x8000, 0x8000, 0x8000}, mag_min[3] = {0x7FFF, 0x7FFF, 0x7FFF}, mag_temp[3] = {0, 0, 0};
 
   SerialUSB.println("Mag Calibration: Wave device in a figure eight until done!");
-  delay(4000);
+  audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); delay(500);   // Short Beep
+  audio.enableAmp(); audio.setvolumeBoth(20); delay(1000); audio.disableAmp(); delay(500);  // Long Beep
+  audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp();               // Short Beep
+  delay(1000);
 
-  sample_count = 256;
+  sample_count = 300;
   for(ii = 0; ii < sample_count; ii++) {
+    if(ii % 50 == 0){
+        audio.enableAmp(); audio.setvolumeBoth(20); delay(500); audio.disableAmp(); // Short Beep
+        SerialUSB.println("Switch");
+    }
     readMagData(mag_temp);  // Read the mag data   
     for (int jj = 0; jj < 3; jj++) {
       if(mag_temp[jj] > mag_max[jj]) mag_max[jj] = mag_temp[jj];
@@ -991,24 +1002,29 @@ void MPU9250SelfTest(float * destination) // Should return percent deviation fro
 
 
     float getHeading(){
-      float mag[3];
-      float magAv[3]={0,0,0};
+      // float mag[3];
+      // float magAv[3]={0,0,0};
       float magNorm[3];
+      // float Accel[3];
+      // float AccelAv[3]={0,0,0};
+
+      // for(int i=0; i<3; i++){
+      //   getMagvalues(mag);  
+      //   getAccelvalues(Accel); 
+      //   magAv[0] += mag[0];magAv[1] += mag[1];magAv[2] += mag[2];
+      //   AccelAv[0] += Accel[0];AccelAv[1] += Accel[1];AccelAv[2] += Accel[2];
+      // }
+      // for(int i=0; i<3; i++){
+      //   mag[i] = magAv[i]/3.0;
+      //   Accel[i] = AccelAv[i]/3.0;
+      // }
+
+      float mag[3];
       float Accel[3];
-      float AccelAv[3]={0,0,0};
+      getMagvalues(mag);  
+      getAccelvalues(Accel); 
 
-      for(int i=0; i<3; i++){
-        getMagvalues(mag);  
-        getAccelvalues(Accel); 
-        magAv[0] += mag[0];magAv[1] += mag[1];magAv[2] += mag[2];
-        AccelAv[0] += Accel[0];AccelAv[1] += Accel[1];AccelAv[2] += Accel[2];
-      }
-      for(int i=0; i<3; i++){
-        mag[i] = magAv[i]/3.0;
-        Accel[i] = AccelAv[i]/3.0;
-      }
-
-      float Roll = atan2(-Accel[0], Accel[2]); // Phi Radians
+      float Roll = atan2(-Accel[0], Accel[2]); // Phi Radians 
 
       float iCos=cos(Roll);
       float iSin=sin(Roll);
