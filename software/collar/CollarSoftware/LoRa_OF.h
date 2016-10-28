@@ -66,42 +66,51 @@ class LoRa_OF {
       // ///< Bw = 500 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on. Fast+short range, 915 MHz, 10 dBm on RFM95W 
       radio.setModemConfig(RH_RF95::Bw500Cr45Sf128); 
       radio.setFrequency(915.0); 
-      radio.setTxPower(10); 
+      radio.setTxPower(5); 
     }
 
     bool sleep(){
       return radio.sleep();
     }
 
+
+    int sendBias() {
+      
+      memcpy(transmitBuffer+0,  &magbias0, 2);
+      memcpy(transmitBuffer+2,  &magbias1, 2);
+      memcpy(transmitBuffer+4,  &magbias2, 2);
+      radio.setHeaderFlags(0x3,0x0F);
+      return phoneHome();
+
+    }
+
     int sendPosition(struct position me, struct datetime now, uint16_t alerts, uint8_t shocks , uint8_t version) {
-      struct datapacket0 d;
 
-      d.lat=me.lat;
-      d.lon=me.lon;
-      d.gpstime=now.time;
-      d.date=now.date;
-      d.alerts=alerts;
-      d.shocks=shocks;
-      d.ver=version;
-
-      memcpy(transmitBuffer+0,  &d.lat,     4);
-      memcpy(transmitBuffer+4,  &d.lon,     4);
-      memcpy(transmitBuffer+8,  &d.gpstime, 4);
-      memcpy(transmitBuffer+12, &d.date,    4);
-      memcpy(transmitBuffer+16, &d.alerts,  2);
-      memcpy(transmitBuffer+18, &d.shocks,  1);
-      memcpy(transmitBuffer+19, &d.ver,     1);
+      memcpy(transmitBuffer+0,  &me.lat,   4);
+      memcpy(transmitBuffer+4,  &me.lon,   4);
+      memcpy(transmitBuffer+8,  &now.time, 4);
+      memcpy(transmitBuffer+12, &now.date, 4);
+      memcpy(transmitBuffer+16, &alerts,   2);
+      memcpy(transmitBuffer+18, &shocks,   1);
+      memcpy(transmitBuffer+19, &version,  1);
       radio.setHeaderFlags(0x0,0x0F);
       return phoneHome();
 
     }
 
+  uint8_t power = 5;
+
   int  phoneHome(){
+    
     // Send message to base station
-    int power = 5;
+    if(power > 5)
+      power = power - 5;
+    else 
+      power = 5;
+
     radio.setTxPower(power); 
 
-    //memcpy(transmitBuffer+16, &power, 2);
+    memcpy(transmitBuffer+18, &power, 1);
 
     while(1){ 
       if (manager.sendtoWait(transmitBuffer, sizeof(transmitBuffer), BASE_STATION_ADDRESS)) 
@@ -130,16 +139,12 @@ class LoRa_OF {
               memcpy(&fencePoints[index].lon,   &receiveBuffer[8],  4);
               memcpy(&fencePoints[index+1].lat, &receiveBuffer[12], 4);
               memcpy(&fencePoints[index+1].lon, &receiveBuffer[16], 4);
-                    
               if(last) {
-                SerialUSB.println("Copy to Flash");
-
+                //SerialUSB.print("Copy to Flash ");
                 char flashbuffer[sizeof(fencePoints)+2];
                 memcpy(&flashbuffer[0],   &polyCorners,     sizeof(polyCorners));
                 memcpy(&flashbuffer[1],   &fenceversion,    sizeof(fenceversion));
                 memcpy(&flashbuffer[2],   &fencePoints[0],  sizeof(fencePoints));
-                SerialUSB.println(flashbuffer[0],BIN);
-                SerialUSB.println(flashbuffer[1],BIN);
                 SerialFlashFile flashFile = SerialFlash.open(file_fence);
                 flashFile.erase();
                 flashFile.write(flashbuffer, sizeof(flashbuffer));
@@ -148,7 +153,7 @@ class LoRa_OF {
               break;
                   
             case 2: //Settings
-              SerialUSB.println("Settings Packet");                   
+              //SerialUSB.println("Settings Packet");                   
 
               memcpy(&NODE_ADDRESS,   &receiveBuffer[0],  1);   //Dest, Orig, Bytes
               memcpy(&distThresh,     &receiveBuffer[1],  1);
@@ -158,7 +163,7 @@ class LoRa_OF {
               memcpy(&magbias1,       &receiveBuffer[7],  2);
               memcpy(&magbias2,       &receiveBuffer[9],  2);
               
-              setAddress();
+              setAddress(); //Updates the nodes address if it has been changed
               
               SerialFlashFile flashFile = SerialFlash.open(file_settings);
               flashFile.erase();
@@ -169,14 +174,14 @@ class LoRa_OF {
               break;
           }
         } 
-        SerialUSB.println("No More Replies"); 
+        //SerialUSB.println("No More Replies"); 
         return 0;  //Sucess 
       } else {
         power = power+5;
 
-        //memcpy(transmitBuffer+16, &power, 2);
+        memcpy(transmitBuffer+18, &power, 1);
 
-        if(power > 25){
+        if(power > 15){
           SerialUSB.println("sendtoWait failed");   
           return 1; //Fail
         } 
