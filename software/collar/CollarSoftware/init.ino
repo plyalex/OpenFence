@@ -83,16 +83,27 @@ void init_mpu(){
     magbias0 = (int16_t)magbias[0];
     magbias1 = (int16_t)magbias[1];
     magbias2 = (int16_t)magbias[2];
+    lora.sendBias();
+
+    char buf[11];
+    memcpy(&buf[0], &NODE_ADDRESS,  1);  
+    memcpy(&buf[1], &distThresh,    1);
+    memcpy(&buf[2], &motionThresh,  1);
+    memcpy(&buf[3], &testing,       1);
+    memcpy(&buf[5], &magbias0,      2);
+    memcpy(&buf[7], &magbias1,      2);
+    memcpy(&buf[9], &magbias2,      2);
+
+    SerialFlashFile flashFile = SerialFlash.open(file_settings);
+    flashFile.erase();
+    flashFile.write(buf, 11);
+    flashFile.close();
+
   #endif
-
-  magbias[0] = -25;//-90;//+470.; // User environmental x-axis correction in milliGauss, should be automatically calculated
-  magbias[1] = +512;//+120.;      // User environmental y-axis correction in milliGauss
-  magbias[2] = -457;//+125.;        // User environmental z-axis correction in milliGauss
-
 
 }
 
 void init_gps(){
-  GPSSerial.println("$PMTK220,1000*1F"); //Set update frequency to 1Hz (Period 1000ms)
+  GPSSerial.println("$PMTK220,500*2B"); //Set update frequency to 2Hz (Period 500ms)  // $PMTK220,1000*1F , $PMTK220,500*2B , $PMTK220,200*2C
   GPSSerial.println("$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28"); //Print GPRMC and GPGGA only
 }
